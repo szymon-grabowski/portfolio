@@ -25,12 +25,15 @@ export function initMonitorFit(): void {
   if (!rig) return;
 
   const fit = () => {
-    const scale = Math.min(
+    const fitScale = Math.min(
       (window.innerWidth - MARGIN_X) / RIG_WIDTH,
       (window.innerHeight - MARGIN_Y) / RIG_HEIGHT,
-      MAX_SCALE,
     );
-    const framed = scale >= MIN_SCALE && (RIG_HEIGHT * scale) / window.innerHeight >= MIN_HEIGHT_FILL;
+    // The fill test uses the uncapped scale: it should only catch windows that are too
+    // tall for their width. With MAX_SCALE applied, a large landscape window (e.g. browser
+    // zoomed out below 100%) would also fail it and wrongly drop the frame.
+    const framed = fitScale >= MIN_SCALE && (RIG_HEIGHT * fitScale) / window.innerHeight >= MIN_HEIGHT_FILL;
+    const scale = Math.min(fitScale, MAX_SCALE);
     document.body.classList.toggle('framed', framed);
     rig.style.transform = framed ? `scale(${scale})` : '';
     // Phone-sized text looks lost on a big portrait screen: grow it with the window width.
