@@ -15,6 +15,25 @@ npm run preview   # serve dist/ locally
 Deploy by serving `dist/` with Caddy or nginx; `deploy/Caddyfile` has a ready config
 (compression + long-term caching of hashed assets).
 
+## Updating the server
+
+The server only serves static files, so an update means rebuilding and replacing
+`dist/` in the directory Caddy serves (`/srv/portfolio/dist` in `deploy/Caddyfile`).
+Replace `user@server` with your SSH login.
+
+```bash
+git pull                  # or commit your local changes first
+npm ci                    # only needed when package-lock.json changed
+npm run build             # fails on type errors, so nothing broken gets uploaded
+rsync -avz --delete dist/ user@server:/srv/portfolio/dist/
+```
+
+- The trailing slashes matter: they copy the *contents* of `dist/` into the target.
+- `--delete` removes old hashed assets that the new build no longer references.
+- No Caddy restart is needed for content changes. Only after editing the Caddyfile:
+  `sudo systemctl reload caddy` (check it first with `caddy validate --config /etc/caddy/Caddyfile`).
+- Check the result with a hard refresh (Ctrl+Shift+R) or a private window.
+
 ## Structure
 
 ```

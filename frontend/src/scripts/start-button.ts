@@ -8,6 +8,12 @@ export function initStartButton(): void {
   if (!link || !typed) return;
 
   let navigating = false;
+  // Back/forward cache restores the page with JS state intact: unlock START and clear the prompt.
+  window.addEventListener('pageshow', (event) => {
+    if (!event.persisted) return;
+    navigating = false;
+    typed.textContent = '';
+  });
   link.addEventListener('click', async (event) => {
     // Let modified clicks (new tab, new window) behave like any link.
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
