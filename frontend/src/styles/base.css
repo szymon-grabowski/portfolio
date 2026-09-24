@@ -6,7 +6,16 @@
   padding-top: env(safe-area-inset-top, 0px);
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
-html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+/*
+ * Black behind everything: shows through overscroll, safe-area padding, zoom and
+ * page transitions instead of the browser's default white.
+ */
+html {
+  height: 100%;
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+  background: #000;
+  color-scheme: dark;
+}
 *, *::before, *::after { box-sizing: border-box; }
 
 body {

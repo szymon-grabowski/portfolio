@@ -5,8 +5,12 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
+    "check": "astro check",
     "build": "astro check && astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "validate:html": "html-validate \"dist/**/*.html\"",
+    "test:e2e": "playwright test",
+    "test": "npm run build && npm run validate:html && npm run test:e2e"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",
@@ -18,6 +22,9 @@
     "node": ">=22.12.0"
   },
   "devDependencies": {
-    "@types/node": "^22.20.4"
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^22.20.4",
+    "html-validate": "^11.16.0"
   }
 }

@@ -18,11 +18,13 @@ const { title = SITE.title } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#000000" />
     <title>{title}</title>
     <meta name="description" content={SITE.description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
-    <style is:global set:html={fontFace + themesToCss()}></style>
+    <style is:global set:html={'html{background:#000}' + fontFace + themesToCss()}></style>
     <!-- Before first paint: apply the saved theme, and hide the finished boot log if it is about to animate. -->
     <script is:inline define:vars={{ ids: THEME_IDS, key: THEME_STORAGE_KEY, bootKey: BOOT_SESSION_KEY }}>
       const root = document.documentElement;

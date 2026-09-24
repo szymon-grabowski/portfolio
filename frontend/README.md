@@ -10,15 +10,72 @@ npm install
 npm run dev       # http://localhost:4321
 npm run build     # type-check + static build into dist/
 npm run preview   # serve dist/ locally
+
+npx playwright install --with-deps chromium firefox   # once: browsers for the E2E tests
+npm test          # build + HTML validation + E2E/accessibility tests (Playwright)
+npm run test:e2e  # E2E only, against the existing dist/
 ```
+
+Careful on the production server: `npm run build` (and so `npm test`) writes straight
+into the live `dist/`. Run the tests on your own machine or let CI do it.
 
 Production is served by nginx straight from `dist/` (see below).
 `deploy/Caddyfile` is an alternative Caddy config, not used on the current server.
 
-## Updating the server
+## CI/CD
 
-There is no CI/CD yet. The site is built directly on the server (`vmi3603348`), and
-nginx serves the build output in place:
+`.github/workflows/ci-cd.yml` runs on every push and pull request that touches `frontend/`:
+
+| Job | Checks |
+| --- | --- |
+| Build & static checks | `npm ci`, `npm audit` (production deps), `astro check` + build, HTML validation, internal links (lychee) |
+| E2E & accessibility | Playwright on the built `dist/`: Chromium, Firefox and a phone; boot, START, theme picker, cards and links, layout/monitor frame, axe WCAG 2.1 AA, no console errors |
+| Lighthouse | accessibility, best practices and SEO must score ≥ 0.9–0.95; performance < 0.9 is a warning |
+| Deploy to production | only on `main`, only after all of the above **and a manual approval** |
+
+The deploy job copies the **same `dist/` that was tested** to the server with rsync (no
+build on the server), then checks that the live `index.html` matches it and that
+`/command-center/` and an asset return 200.
+
+### Deploying
+
+1. Push or merge to `main`.
+2. When the checks pass, the run shows *Waiting for review* → **Review deployments** →
+   tick `production` → **Approve and deploy**.
+
+A run can also be started by hand: Actions → CI/CD → **Run workflow** (branch `main`).
+If several pushes wait for approval, only the newest one stays in the queue.
+
+### One-time setup
+
+On the server, a key used only for deployments:
+
+```bash
+ssh-keygen -t ed25519 -N '' -C github-deploy -f ~/.ssh/github_deploy
+cat ~/.ssh/github_deploy.pub >> ~/.ssh/authorized_keys
+cat ~/.ssh/github_deploy          # → secret SSH_PRIVATE_KEY, then: rm ~/.ssh/github_deploy
+ssh-keyscan -p 22 <server-ip>     # → secret SSH_KNOWN_HOSTS
+```
+
+On GitHub: Settings → Environments → **New environment** `production`:
+
+- **Required reviewers:** yourself (this is the manual approval step)
+- **Deployment branches and tags:** Selected → `main`
+- **Secrets:** `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`
+- **Variables:**
+  - `DEPLOY_HOST` (server IP or hostname)
+  - `DEPLOY_USER` (`szymon`)
+  - `DEPLOY_PATH` (`/home/szymon/portfolio/frontend/dist`, the nginx `root`)
+  - `SITE_URL` (`https://szymongrabowski.dev`)
+  - optionally `DEPLOY_PORT` (default 22)
+
+Before copying, the job refuses to run unless `$DEPLOY_PATH/index.html` already exists,
+so a wrong path cannot be wiped by `rsync --delete`.
+
+## Updating the server by hand
+
+The manual way, if CI is unavailable. The site is built directly on the server
+(`vmi3603348`), and nginx serves the build output in place:
 `/etc/nginx/sites-available/szymongrabowski.dev` has
 `root /home/szymon/portfolio/frontend/dist`. After a successful build the new version
 is live at once; no copying and no nginx reload are needed.

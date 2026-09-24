@@ -27,7 +27,7 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     label: 'GITOPS / BUILD / DEPLOYMENT',
     wide: true,
     modules: [
-      { title: 'Repository', status: 'synced', description: 'Source code\nand configuration', icon: 'git', href: '#', external: true },
+      { title: 'Repository', status: 'synced', description: 'Source code\nand configuration', icon: 'git', href: 'https://github.com/szymon-grabowski/portfolio', external: true },
       { title: 'CI/CD', status: 'pipeline green', description: 'Build, test\nand deploy', icon: 'githubactions', href: '#', external: true },
       { title: 'Argo CD', status: 'healthy', description: 'GitOps\ndeployments', icon: 'argo', href: '#', external: true },
       { title: 'Kubernetes', status: 'healthy', description: 'Cluster status\nand resources', icon: 'kubernetes', href: '#' },
@@ -46,7 +46,7 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     modules: [
       { title: 'Architecture', status: 'up to date', description: 'System design\nand diagrams', icon: 'architecture', href: '#' },
       { title: 'CV', status: 'available', description: 'Experience\nand skills', icon: 'document', href: '#' },
-      { title: 'LinkedIn', status: 'online', description: "Let's connect", icon: 'linkedin', href: '#', external: true },
+      { title: 'LinkedIn', status: 'online', description: "Let's connect", icon: 'linkedin', href: 'https://www.linkedin.com/in/szymon-grabowskii/', external: true },
     ],
   },
 ];
