@@ -1,0 +1,8 @@
+---
+import { SITE } from '../data/site';
+---
+<footer class="footer">
+  <div class="footer__traits">{SITE.traits.map((trait) => <span>{trait}</span>)}</div>
+  <div class="rule"></div>
+  <div>{SITE.motto}</div>
+</footer>

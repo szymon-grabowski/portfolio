@@ -1,0 +1,15 @@
+---
+import { SITE } from '../data/site';
+import ThemePicker from './ThemePicker.astro';
+---
+<header class="bar">
+  <div class="bar__name">{SITE.owner}</div>
+  <div class="sep"></div>
+  <div class="rule"></div>
+  <div class="bar__tags">{SITE.tags}</div>
+  <div class="sep sep--optional"></div>
+  <div class="bar__version">{SITE.version}</div>
+  <div class="sep sep--optional"></div>
+  <div class="bar__status"><div class="bar__led"></div><span>{SITE.status}</span></div>
+  <ThemePicker />
+</header>

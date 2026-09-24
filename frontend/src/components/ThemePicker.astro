@@ -1,0 +1,23 @@
+---
+import { DEFAULT_THEME, THEMES } from '../data/themes';
+---
+<button class="theme-toggle" type="button" data-theme-toggle aria-expanded="false" aria-controls="theme-panel">
+  <i class="theme-toggle__swatch"></i>THEME
+</button>
+<div class="theme-panel" id="theme-panel" data-theme-panel>
+  <h2 class="theme-panel__title" id="theme-panel-title">Theme</h2>
+  <div role="radiogroup" aria-labelledby="theme-panel-title">
+    {THEMES.map((theme) => (
+      <label class="theme-option">
+        <input type="radio" name="theme" value={theme.id} checked={theme.id === DEFAULT_THEME} />
+        <span class="theme-option__chip" style={`background:${theme.tokens.bg}`}>
+          <i style={`background:${theme.tokens.accent}`}></i>
+          <i style={`background:${theme.tokens.ok}`}></i>
+        </span>
+        <span>{theme.name}</span>
+        <span class="theme-option__check" aria-hidden="true">[OK]</span>
+      </label>
+    ))}
+  </div>
+  <button class="theme-panel__replay" type="button" data-boot-replay>Replay boot sequence</button>
+</div>

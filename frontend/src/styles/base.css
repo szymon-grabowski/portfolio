@@ -1,0 +1,45 @@
+/* Reset, typography and small shared utilities. */
+:root {
+  --font: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --theme-fade: 0.35s ease;
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  height: 100%;
+  min-height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color var(--theme-fade), color var(--theme-fade);
+}
+
+:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; }
+
+/* Thin separators used in header, boot and footer. */
+.rule { flex: 1; height: 1px; min-width: 12px; background: var(--dim); }
+.sep  { flex: none; width: 1px; height: 16px; background: var(--accent); }
+
+/* Visually hidden, still read by screen readers. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/*
+ * Cross-page transition (Chrome, Edge, Safari 18.2+; ignored elsewhere):
+ * the monitor casing stays put while the screen content crossfades.
+ */
+@view-transition { navigation: auto; }
+.monitor { view-transition-name: monitor; }
+
+@media (prefers-reduced-motion: reduce) {
+  body { transition: none; }
+  @view-transition { navigation: none; }
+}

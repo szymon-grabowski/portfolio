@@ -1,0 +1,22 @@
+---
+/** Shared page shell: monitor + screen grid (header, content, optional footer). */
+import BaseLayout from './BaseLayout.astro';
+import Header from '../components/Header.astro';
+import Monitor from '../components/Monitor.astro';
+
+interface Props {
+  title?: string;
+}
+const { title } = Astro.props;
+---
+<BaseLayout title={title}>
+  <Monitor>
+    <div class="app">
+      <Header />
+      <main>
+        <slot />
+      </main>
+      <slot name="footer" />
+    </div>
+  </Monitor>
+</BaseLayout>

@@ -1,0 +1,7 @@
+.world-map {
+  align-self: center;
+  width: 280px; max-width: 100%; height: auto;
+  margin-top: 24px;
+  color: var(--accent);
+}
+body.framed .world-map { width: 240px; margin-top: 16px; }

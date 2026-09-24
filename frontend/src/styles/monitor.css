@@ -1,0 +1,75 @@
+/*
+ * Monitor frame. Active only when <body> has .framed
+ * (set by scripts/monitor-fit.ts when the window is large enough).
+ * Without it the screen content simply fills the window.
+ */
+.gridline, .monitor-neck, .monitor-foot { display: none; }
+
+body:not(.framed) :is(.scene, .rig, .monitor, .screen) { height: 100%; }
+
+body.framed { background: var(--scene); overflow: hidden; }
+
+body.framed .scene {
+  position: relative;
+  height: 100%;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+
+/* Faint guide lines behind the monitor. */
+body.framed .gridline { display: block; position: absolute; background: var(--faint); pointer-events: none; }
+.gl-v1 { left: 60px;  top: 0; bottom: 0; width: 1px; }
+.gl-v2 { right: 60px; top: 0; bottom: 0; width: 1px; }
+.gl-h1 { top: 40px;    left: 0; right: 0; height: 1px; }
+.gl-h2 { bottom: 60px; left: 0; right: 0; height: 1px; }
+
+/* The whole monitor is scaled as one unit from its center. */
+body.framed .rig {
+  flex: none;
+  width: 1312px;
+  display: flex; flex-direction: column; align-items: center;
+  transform-origin: center center;
+}
+
+body.framed .monitor {
+  width: 1312px; height: 768px;
+  padding: 16px 16px 32px;
+  background: var(--bezel);
+  border: 1px solid var(--edge);
+  border-radius: 16px;
+  box-shadow: 0 40px 80px #000a, inset 0 1px 0 #ffffff0d;
+  transition: background-color var(--theme-fade);
+}
+
+body.framed .screen {
+  position: relative;
+  width: 1280px; height: 720px;
+  overflow: hidden;
+  background: var(--bg);
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px #000, inset 0 0 40px #0006;
+}
+
+body.framed .monitor-neck {
+  display: block; width: 76px; height: 86px;
+  background: var(--bezel);
+  border-inline: 1px solid var(--edge);
+}
+body.framed .monitor-foot {
+  display: block; width: 520px; height: 18px;
+  background: var(--bezel);
+  border: 1px solid var(--edge);
+  border-radius: 4px 4px 10px 10px;
+  box-shadow: 0 18px 30px #000c;
+}
+
+/* Inside the monitor: fixed screen size, tighter spacing and an inner frame. */
+body.framed .app { height: 720px; min-height: 0; gap: 12px; padding: 36px 48px; }
+body.framed .app::before {
+  content: '';
+  position: absolute; inset: 16px;
+  border: 1px solid var(--faint);
+  border-radius: 10px;
+  pointer-events: none;
+}
+body.framed .app > main { min-height: 0; }

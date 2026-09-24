@@ -1,0 +1,13 @@
+# Sekrety
+.env
+.env.*
+!.env.example
+
+# Zależności i buildy
+node_modules/
+dist/
+.astro/
+
+# Systemowe
+.DS_Store
+*.log

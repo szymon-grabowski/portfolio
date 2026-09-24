@@ -1,0 +1,14 @@
+/* Screen layout: header / main / footer. */
+.app {
+  position: relative;
+  min-height: 100%;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 24px;
+  padding: 24px 32px;
+}
+.app > main { display: flex; justify-content: center; align-items: center; }
+
+@media (max-width: 640px) {
+  body:not(.framed) .app { padding: 16px; gap: 20px; }
+}

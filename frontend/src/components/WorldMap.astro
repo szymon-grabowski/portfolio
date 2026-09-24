@@ -1,0 +1,25 @@
+---
+/**
+ * Dotted world map, generated at build time: zero JavaScript in the browser.
+ * All dots are drawn as two <path> elements (full and dimmed) instead of one
+ * element per dot, which keeps the DOM and the HTML small.
+ */
+import { DOT_SIZE, DOT_SPACING, WORLD_MAP_ROWS } from '../data/world-map';
+
+let bright = '';
+let dim = '';
+WORLD_MAP_ROWS.forEach((row, y) => {
+  [...row].forEach((cell, x) => {
+    if (cell !== '#') return;
+    const dot = `M${x * DOT_SPACING} ${y * DOT_SPACING}h${DOT_SIZE}v${DOT_SIZE}h-${DOT_SIZE}z`;
+    if ((x * 7 + y * 13) % 5 === 0) dim += dot;
+    else bright += dot;
+  });
+});
+const width = Math.max(...WORLD_MAP_ROWS.map((r) => r.length)) * DOT_SPACING;
+const height = WORLD_MAP_ROWS.length * DOT_SPACING;
+---
+<svg class="world-map" viewBox={`0 0 ${width} ${height}`} aria-hidden="true">
+  <path d={bright} fill="currentColor" />
+  <path d={dim} fill="currentColor" opacity="0.5" />
+</svg>

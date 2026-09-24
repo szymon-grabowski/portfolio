@@ -1,0 +1,11 @@
+/*
+ * Theme palettes are generated from src/data/themes.ts (see BaseLayout).
+ * This file only holds tones derived from them, shared by every theme.
+ */
+html {
+  --dim: color-mix(in srgb, var(--accent) 34%, transparent);
+  --faint: color-mix(in srgb, var(--accent) 9%, transparent);
+  --line: color-mix(in srgb, var(--accent) 25%, transparent);
+  --card: color-mix(in srgb, var(--accent) 3%, transparent);
+  --card-hover: color-mix(in srgb, var(--accent) 8%, transparent);
+}

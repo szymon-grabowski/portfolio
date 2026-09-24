@@ -1,0 +1,108 @@
+/* Command Center page: title bar, module groups and cards. */
+.cc {
+  flex: 1;
+  align-self: stretch;
+  min-width: 0;
+  display: flex; flex-direction: column; gap: 20px;
+}
+
+/* ---------- title bar ---------- */
+.cc-bar {
+  flex: none;
+  display: flex; align-items: center; gap: 18px;
+  height: 48px; padding: 0 18px;
+  border: 1px solid var(--dim);
+  border-radius: 6px;
+}
+.cc-bar__back {
+  display: flex; align-items: center; gap: 8px;
+  height: 30px; margin-left: -8px; padding: 0 10px;
+  font-size: 11px;
+  color: var(--accent-text);
+  text-decoration: none;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+.cc-bar__back:hover { border-color: var(--accent); color: var(--text); }
+.cc-bar__num { font-size: 18px; font-weight: 700; color: var(--accent-text); }
+.cc-bar__title { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
+.cc-bar__count { font-size: 12px; color: var(--accent-text); white-space: nowrap; }
+.cc-bar__ready { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--ok); }
+.cc-bar__ready i { width: 9px; height: 9px; border-radius: 50%; background: var(--ok); }
+
+/* ---------- groups ---------- */
+.cc-groups {
+  flex: 1; min-height: 0;
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px 12px;
+  padding-top: 8px;
+}
+.cc-group {
+  position: relative;
+  min-width: 0;
+  padding: 22px 12px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.cc-group--wide { grid-column: 1 / -1; }
+.cc-group__label {
+  position: absolute; left: 12px; top: -8px;
+  margin: 0; padding: 0 8px;
+  font-size: 11px; font-weight: 400; letter-spacing: 0.04em;
+  color: var(--accent-text);
+  background: var(--bg);
+}
+.cc-group__grid {
+  height: 100%;
+  display: grid;
+  grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+  gap: 12px;
+}
+
+/* ---------- card ---------- */
+.module-card {
+  min-width: 0;
+  display: flex; flex-direction: column; gap: 10px;
+  padding: 12px 14px 14px;
+  color: var(--text);
+  text-decoration: none;
+  background: var(--card);
+  border: 1px solid var(--dim);
+  border-radius: 6px;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+.module-card:hover { background: var(--card-hover); border-color: var(--accent); }
+.module-card__top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--accent-text); }
+.module-card__led {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ok);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--ok) 60%, transparent);
+}
+.module-card__head { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.module-card__icon { color: var(--accent-text); }
+/* Official logos keep their own colors; the box matches the line icons so cards stay aligned. */
+.module-card__logo { display: block; width: 40px; height: 36px; object-fit: contain; }
+.module-card__title { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: 0.01em; }
+.module-card__rule { height: 1px; background: var(--line); }
+.module-card__body { display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.4; }
+.module-card__status { display: flex; align-items: center; gap: 7px; color: var(--ok); }
+.module-card__status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.module-card__desc { margin: 0; color: var(--muted); white-space: pre-line; }
+
+/* Inside the monitor: two rows that share the remaining height. */
+body.framed .cc-groups { grid-template-rows: 1fr 1fr; }
+
+/* ---------- full-screen (no monitor) ---------- */
+@media (max-width: 1100px) {
+  body:not(.framed) .cc-groups { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  body:not(.framed) .cc-group__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  body:not(.framed) .cc-bar__count,
+  body:not(.framed) .cc-bar .rule,
+  body:not(.framed) .cc-bar .sep { display: none; }
+}
+@media (max-width: 420px) {
+  body:not(.framed) .cc-group__grid { grid-template-columns: minmax(0, 1fr); }
+  body:not(.framed) .cc-bar__num { display: none; }
+}

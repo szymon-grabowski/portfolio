@@ -1,0 +1,27 @@
+---
+/**
+ * Generic line icons for the module cards (placeholders for official logos).
+ * Stroke uses currentColor, so the icon follows the theme.
+ */
+const ICONS = {
+  repo: '<circle cx="12" cy="6" r="2.5"/><circle cx="12" cy="26" r="2.5"/><circle cx="24" cy="12" r="2.5"/><path d="M12 8.5v15M24 14.5c0 5-12 4-12 9"/>',
+  pipeline: '<circle cx="7" cy="16" r="5"/><circle cx="29" cy="16" r="5"/><path d="M13 16h9M19 12.5l3.5 3.5-3.5 3.5"/>',
+  sync: '<path d="M26 11a11 11 0 0 0-19-2M6 21a11 11 0 0 0 19 2"/><path d="M26 4v7h-7M6 28v-7h7"/>',
+  cluster: '<path d="M18 3l12 7v13l-12 7-12-7V10z"/><circle cx="18" cy="16.5" r="3"/><path d="M18 8v5.5M18 19.5V25M11 12.5l4.5 2.5M25 12.5L20.5 15M11 20.5l4.5-2.5M25 20.5L20.5 18"/>',
+  gauge: '<path d="M5 24a13 13 0 1 1 26 0"/><path d="M18 24l6-8"/><circle cx="18" cy="24" r="1.8"/><path d="M9 24h2M25 24h2M18 12v2"/>',
+  metrics: '<path d="M4 27h28"/><path d="M5 22l7-8 6 5 8-11 5 4"/><circle cx="26" cy="8" r="1.5"/>',
+  logs: '<rect x="6" y="4" width="24" height="26" rx="2"/><path d="M11 11h14M11 16h10M11 21h14M11 26h7"/>',
+  architecture: '<rect x="13" y="3" width="10" height="7" rx="1"/><rect x="3" y="24" width="10" height="7" rx="1"/><rect x="23" y="24" width="10" height="7" rx="1"/><path d="M18 10v7M8 24v-7h20v7"/>',
+  document: '<path d="M9 3h13l7 7v21H9z"/><path d="M22 3v7h7M13 16h11M13 21h11M13 26h7"/>',
+  person: '<circle cx="18" cy="11" r="5.5"/><path d="M7 30c1.5-6 6-9 11-9s9.5 3 11 9"/>',
+} as const;
+
+export type IconName = keyof typeof ICONS;
+
+interface Props {
+  name: IconName;
+}
+const { name } = Astro.props;
+---
+<svg class="module-card__icon" width="36" height="34" viewBox="0 0 36 34" fill="none" stroke="currentColor"
+     stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={ICONS[name]} />

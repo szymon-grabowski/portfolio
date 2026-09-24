@@ -1,0 +1,16 @@
+---
+/** Monitor casing around the screen. The frame shows only when body has .framed. */
+---
+<div class="scene">
+  <i class="gridline gl-v1"></i><i class="gridline gl-v2"></i>
+  <i class="gridline gl-h1"></i><i class="gridline gl-h2"></i>
+  <div class="rig" data-monitor-rig>
+    <div class="monitor">
+      <div class="screen">
+        <slot />
+      </div>
+    </div>
+    <div class="monitor-neck"></div>
+    <div class="monitor-foot"></div>
+  </div>
+</div>

@@ -1,0 +1,57 @@
+.boot { width: min(420px, 100%); display: flex; flex-direction: column; }
+
+.boot__init {
+  display: flex; align-items: center; gap: 14px;
+  font-size: 11px; letter-spacing: 0.04em;
+  color: var(--accent-text);
+}
+
+.boot__title {
+  margin: 14px 0 20px -4px;
+  font-size: clamp(40px, 9vw, 60px); font-weight: 800;
+  line-height: 1; letter-spacing: -0.01em; white-space: nowrap;
+}
+.boot__title span { color: var(--accent); }
+
+/* Log lines. Height is reserved so nothing below moves while lines appear. */
+.boot__log {
+  display: flex; flex-direction: column; gap: 7px;
+  min-height: calc(5 * 21px + 4 * 7px);
+  font-size: 14px;
+}
+.log-line { display: flex; justify-content: space-between; gap: 16px; white-space: nowrap; }
+.log-line.is-pending,
+.boot-pending .log-line { visibility: hidden; }
+.log-line__dots { display: inline-block; width: 3ch; }
+.log-line__status {
+  min-width: 5ch; text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--accent-text);
+}
+.log-line__status.is-ok { color: var(--ok); }
+
+/* Prompt with the always-blinking cursor. */
+.prompt { display: flex; align-items: center; gap: 8px; min-height: 20px; margin-top: 20px; font-size: 14px; }
+.prompt__user { color: var(--accent-text); }
+.prompt__cursor { width: 9px; height: 17px; background: var(--text); animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+.boot__verbs {
+  align-self: center;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px;
+  margin-top: 14px;
+  font-size: 13px; letter-spacing: 0.03em;
+  color: var(--accent-text);
+}
+
+body.framed .boot__title  { font-size: 58px; margin: 10px 0 14px -4px; }
+body.framed .boot__log    { gap: 5px; min-height: calc(5 * 21px + 4 * 5px); }
+body.framed .prompt       { margin-top: 14px; }
+body.framed .boot__verbs  { margin-top: 10px; }
+
+@media (max-width: 640px) {
+  .log-line { font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .prompt__cursor { animation: none; }
+}

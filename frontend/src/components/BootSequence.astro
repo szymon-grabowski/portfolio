@@ -1,0 +1,34 @@
+---
+/**
+ * Rendered in its final state (all [OK], START visible), so the page works
+ * without JavaScript. scripts/boot-sequence.ts resets and animates it.
+ */
+import { BOOT_STEPS } from '../data/boot';
+import { SITE } from '../data/site';
+import StartButton from './StartButton.astro';
+import WorldMap from './WorldMap.astro';
+---
+<section class="boot" aria-label="Boot sequence" data-boot>
+  <div class="boot__init"><span>&gt; INITIALIZING DEVOPS ENVIRONMENT</span><div class="rule"></div></div>
+  <h1 class="boot__title">SYSTEM <span>READY</span></h1>
+
+  <div class="boot__log" aria-hidden="true">
+    {BOOT_STEPS.map((step, i) => (
+      <div class="log-line" data-log-line>
+        <span>&gt; {step}<span class="log-line__dots" data-dots>{i === BOOT_STEPS.length - 1 ? '.' : '...'}</span></span>
+        <span class="log-line__status is-ok" data-status>[OK]</span>
+      </div>
+    ))}
+  </div>
+  <p class="sr-only" aria-live="polite" data-boot-status></p>
+
+  <div class="prompt">
+    <span class="prompt__user">devops@portfolio:~$</span>
+    <span data-prompt-input></span>
+    <div class="prompt__cursor"></div>
+  </div>
+
+  <StartButton />
+  <WorldMap />
+  <div class="boot__verbs">{SITE.verbs.map((verb) => <span>{verb}</span>)}</div>
+</section>
