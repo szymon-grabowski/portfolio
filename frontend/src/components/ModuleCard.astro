@@ -1,6 +1,4 @@
 ---
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
 import type { Module } from '../data/modules';
 import ModuleIcon from './ModuleIcon.astro';
 
@@ -10,9 +8,6 @@ interface Props {
 }
 const { module, number } = Astro.props;
 const external = module.external && module.href !== '#';
-
-// Checked at build time: a missing logo file falls back to the line icon instead of a broken image.
-const logo = module.logo && existsSync(join(process.cwd(), 'public', module.logo)) ? module.logo : null;
 ---
 <a class="module-card" href={module.href} {...external ? { target: '_blank', rel: 'noopener' } : {}}>
   <div class="module-card__top">
@@ -20,9 +15,7 @@ const logo = module.logo && existsSync(join(process.cwd(), 'public', module.logo
     <i class="module-card__led" aria-hidden="true"></i>
   </div>
   <div class="module-card__head">
-    {logo
-      ? <img class="module-card__logo" src={logo} alt="" width="40" height="36" loading="lazy" decoding="async" />
-      : <ModuleIcon name={module.icon} />}
+    <ModuleIcon name={module.icon} />
     <h3 class="module-card__title">{module.title}</h3>
   </div>
   <div class="module-card__rule"></div>

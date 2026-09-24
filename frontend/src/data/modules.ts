@@ -8,10 +8,8 @@ export interface Module {
   title: string;
   status: string;
   description: string;
-  /** Fallback line icon, used when `logo` is not set or its file is missing. */
+  /** Brand mark or line icon (components/ModuleIcon.astro); drawn in the theme color. */
   icon: IconName;
-  /** Official logo file in public/logos/ (see public/logos/README.md). */
-  logo?: string;
   href: string;
   /** Opens in a new tab (external sites). */
   external?: boolean;
@@ -29,18 +27,18 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     label: 'GITOPS / BUILD / DEPLOYMENT',
     wide: true,
     modules: [
-      { title: 'Repository', logo: '/logos/git.svg', status: 'synced', description: 'Source code\nand configuration', icon: 'repo', href: '#', external: true },
-      { title: 'CI/CD', logo: '/logos/ci.svg', status: 'pipeline green', description: 'Build, test\nand deploy', icon: 'pipeline', href: '#', external: true },
-      { title: 'Argo CD', logo: '/logos/argo.svg', status: 'healthy', description: 'GitOps\ndeployments', icon: 'sync', href: '#', external: true },
-      { title: 'Kubernetes', logo: '/logos/kubernetes.svg', status: 'healthy', description: 'Cluster status\nand resources', icon: 'cluster', href: '#' },
+      { title: 'Repository', status: 'synced', description: 'Source code\nand configuration', icon: 'git', href: '#', external: true },
+      { title: 'CI/CD', status: 'pipeline green', description: 'Build, test\nand deploy', icon: 'githubactions', href: '#', external: true },
+      { title: 'Argo CD', status: 'healthy', description: 'GitOps\ndeployments', icon: 'argo', href: '#', external: true },
+      { title: 'Kubernetes', status: 'healthy', description: 'Cluster status\nand resources', icon: 'kubernetes', href: '#' },
     ],
   },
   {
     label: 'OBSERVABILITY / METRICS / LOGS',
     modules: [
-      { title: 'Grafana', logo: '/logos/grafana.svg', status: 'healthy', description: 'Metrics\nand dashboards', icon: 'gauge', href: '#', external: true },
-      { title: 'Prometheus', logo: '/logos/prometheus.svg', status: 'scraping', description: 'Metrics\nand alerting', icon: 'metrics', href: '#', external: true },
-      { title: 'Loki', logo: '/logos/loki.svg', status: 'running', description: 'Log aggregation\nand search', icon: 'logs', href: '#', external: true },
+      { title: 'Grafana', status: 'healthy', description: 'Metrics\nand dashboards', icon: 'grafana', href: '#', external: true },
+      { title: 'Prometheus', status: 'scraping', description: 'Metrics\nand alerting', icon: 'prometheus', href: '#', external: true },
+      { title: 'Loki', status: 'running', description: 'Log aggregation\nand search', icon: 'loki', href: '#', external: true },
     ],
   },
   {
@@ -48,7 +46,7 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     modules: [
       { title: 'Architecture', status: 'up to date', description: 'System design\nand diagrams', icon: 'architecture', href: '#' },
       { title: 'CV', status: 'available', description: 'Experience\nand skills', icon: 'document', href: '#' },
-      { title: 'LinkedIn', logo: '/logos/linkedin.svg', status: 'online', description: "Let's connect", icon: 'person', href: '#', external: true },
+      { title: 'LinkedIn', status: 'online', description: "Let's connect", icon: 'linkedin', href: '#', external: true },
     ],
   },
 ];

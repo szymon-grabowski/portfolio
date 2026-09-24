@@ -17,7 +17,7 @@
 .cc-bar__back {
   display: flex; align-items: center; gap: 8px;
   height: 30px; margin-left: -8px; padding: 0 10px;
-  font-size: 11px;
+  font-size: 11px; white-space: nowrap;
   color: var(--accent-text);
   text-decoration: none;
   border: 1px solid var(--line);
@@ -80,8 +80,8 @@
 }
 .module-card__head { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .module-card__icon { color: var(--accent-text); }
-/* Official logos keep their own colors; the box matches the line icons so cards stay aligned. */
-.module-card__logo { display: block; width: 40px; height: 36px; object-fit: contain; }
+/* Brand marks are solid shapes: a little smaller than the line icons so both look the same weight. */
+.module-card__icon--brand { padding: 3px; }
 .module-card__title { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: 0.01em; }
 .module-card__rule { height: 1px; background: var(--line); }
 .module-card__body { display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.4; }
@@ -93,6 +93,10 @@
 body.framed .cc-groups { grid-template-rows: 1fr 1fr; }
 
 /* ---------- full-screen (no monitor) ---------- */
+/* Cards keep their natural height; only the monitor screen shares out a fixed height. */
+body:not(.framed) .cc-groups { flex: none; }
+body:not(.framed) .cc-group__grid { height: auto; }
+
 @media (max-width: 1100px) {
   body:not(.framed) .cc-groups { grid-template-columns: minmax(0, 1fr); }
 }
@@ -102,7 +106,25 @@ body.framed .cc-groups { grid-template-rows: 1fr 1fr; }
   body:not(.framed) .cc-bar .rule,
   body:not(.framed) .cc-bar .sep { display: none; }
 }
+/* Phones: one column of compact rows (icon | title + status | number), not tall tiles. */
+@media (max-width: 560px) {
+  body:not(.framed) .cc-group__grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  body:not(.framed) .module-card {
+    display: grid;
+    grid-template-columns: 40px minmax(0, 1fr) auto;
+    grid-template-areas: 'icon title top' 'icon body body';
+    align-items: center;
+    gap: 2px 14px;
+    padding: 10px 12px;
+  }
+  body:not(.framed) .module-card__head { display: contents; }
+  body:not(.framed) .module-card__icon { grid-area: icon; }
+  body:not(.framed) .module-card__title { grid-area: title; font-size: 15px; }
+  body:not(.framed) .module-card__top { grid-area: top; gap: 10px; }
+  body:not(.framed) .module-card__rule { display: none; }
+  body:not(.framed) .module-card__body { grid-area: body; }
+  body:not(.framed) .module-card__desc { white-space: normal; }
+}
 @media (max-width: 420px) {
-  body:not(.framed) .cc-group__grid { grid-template-columns: minmax(0, 1fr); }
   body:not(.framed) .cc-bar__num { display: none; }
 }

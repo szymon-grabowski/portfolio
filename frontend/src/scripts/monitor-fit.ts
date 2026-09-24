@@ -1,6 +1,8 @@
 /**
- * Scales the monitor to fit the window. Below MIN_SCALE the text would be
- * unreadably small, so the frame is dropped and the screen fills the window.
+ * Scales the monitor to fit the window. The frame is dropped (the screen fills
+ * the window) when the text would be unreadably small (below MIN_SCALE), or when
+ * the window is so tall that the monitor would float in empty space: portrait
+ * monitors, tablets and phones.
  */
 const RIG_WIDTH = 1312;              // casing width
 const RIG_HEIGHT = 768 + 86 + 18;    // casing + neck + foot
@@ -8,6 +10,15 @@ const MARGIN_X = 80;
 const MARGIN_Y = 48;
 const MIN_SCALE = 0.62;
 const MAX_SCALE = 1.25;
+/** Minimum share of the window height the scaled monitor must fill. */
+const MIN_HEIGHT_FILL = 0.6;
+/**
+ * Without the frame, windows wider than this (large portrait monitors) zoom the
+ * content up. It must stay above every CSS breakpoint: media queries see the real
+ * window width, so zooming a narrower window would lay out content that no longer fits.
+ */
+const FULLSCREEN_BASE_WIDTH = 1100;
+const FULLSCREEN_MAX_ZOOM = 1.3;
 
 export function initMonitorFit(): void {
   const rig = document.querySelector<HTMLElement>('[data-monitor-rig]');
@@ -19,9 +30,12 @@ export function initMonitorFit(): void {
       (window.innerHeight - MARGIN_Y) / RIG_HEIGHT,
       MAX_SCALE,
     );
-    const framed = scale >= MIN_SCALE;
+    const framed = scale >= MIN_SCALE && (RIG_HEIGHT * scale) / window.innerHeight >= MIN_HEIGHT_FILL;
     document.body.classList.toggle('framed', framed);
     rig.style.transform = framed ? `scale(${scale})` : '';
+    // Phone-sized text looks lost on a big portrait screen: grow it with the window width.
+    const zoom = Math.min(Math.max(window.innerWidth / FULLSCREEN_BASE_WIDTH, 1), FULLSCREEN_MAX_ZOOM);
+    rig.style.zoom = !framed && zoom > 1 ? String(zoom) : '';
   };
 
   // Resize fires many times per frame while dragging; recalculate at most once per frame.
