@@ -20,7 +20,6 @@ Careful on the production server: `npm run build` (and so `npm test`) writes str
 into the live `dist/`. Run the tests on your own machine or let CI do it.
 
 Production is served by nginx straight from `dist/` (see below).
-`deploy/Caddyfile` is an alternative Caddy config, not used on the current server.
 
 ## CI/CD
 
@@ -32,6 +31,9 @@ Production is served by nginx straight from `dist/` (see below).
 | E2E & accessibility | Playwright on the built `dist/`: Chromium, Firefox and a phone; boot, START, theme picker, cards and links, layout/monitor frame, axe WCAG 2.1 AA, no console errors |
 | Lighthouse | accessibility, best practices and SEO must score ≥ 0.9–0.95; performance < 0.9 is a warning |
 | Deploy to production | only on `main`, only after all of the above **and a manual approval** |
+| Helm charts & manifests | `helm lint`, render, `kubeconform`, memory limits and securityContext check |
+| Container image | build, push to GHCR (tag = commit SHA), Trivy scan (only on `main`) |
+| Release | after the approved deploy: sets `image.tag` in `deploy/charts/portfolio/values-prod.yaml`, Argo CD syncs |
 
 The deploy job copies the **same `dist/` that was tested** to the server with rsync (no
 build on the server), then checks that the live `index.html` matches it and that
@@ -61,16 +63,40 @@ On GitHub: Settings → Environments → **New environment** `production`:
 
 - **Required reviewers:** yourself (this is the manual approval step)
 - **Deployment branches and tags:** Selected → `main`
-- **Secrets:** `SSH_PRIVATE_KEY`, `SSH_KNOWN_HOSTS`
-- **Variables:**
+- **Secrets** (everything about the server; GitHub shows them as `***` in logs):
+  - `SSH_PRIVATE_KEY`, the whole private key file
+  - `SSH_KNOWN_HOSTS`, the whole `ssh-keyscan` output
   - `DEPLOY_HOST` (server IP or hostname)
-  - `DEPLOY_USER` (`szymon`)
-  - `DEPLOY_PATH` (`/home/szymon/portfolio/frontend/dist`, the nginx `root`)
-  - `SITE_URL` (`https://szymongrabowski.dev`)
+  - `DEPLOY_USER` (the SSH user)
+  - `DEPLOY_PATH` (the nginx `root`, e.g. `/home/<user>/portfolio/frontend/dist`)
   - optionally `DEPLOY_PORT` (default 22)
+- **Variables:** only `SITE_URL` (`https://szymongrabowski.dev`), the public address.
+  Variables are printed in plain text in the logs: never put anything else there.
 
 Before copying, the job refuses to run unless `$DEPLOY_PATH/index.html` already exists,
 so a wrong path cannot be wiped by `rsync --delete`.
+
+### Security (public repository = public logs)
+
+Anyone can read the Actions logs and download the artifacts of this repository. So:
+
+- Server details live only in **environment secrets**, never in variables, workflow
+  files or commit messages. Each secret is passed only to the step that uses it.
+- The deploy job never prints values: no `set -x`, no verbose flags, ssh runs with
+  `LogLevel QUIET`, and ssh/rsync error output is discarded; error messages name the
+  failing setting, not its value.
+- Pull requests (also from forks) run only the checks: they get no secrets, and the
+  `production` environment accepts only `main`.
+- Artifacts contain only the public build and test reports.
+- Recommended repo settings:
+  - Settings → Actions → General → **Require approval for all external contributors**
+  - Settings → Actions → General → Workflow permissions: **Read repository contents**
+  - Settings → Environments → production: **Required reviewers** and branch `main`
+  - a branch ruleset on `main` requiring the CI checks to pass
+
+If a secret ever shows up in a log: delete that workflow run (run page → ⋯ → Delete
+workflow run) and replace the secret (for SSH: a new key, old one removed from
+`~/.ssh/authorized_keys`).
 
 ## Updating the server by hand
 

@@ -9,10 +9,10 @@ name: CI/CD
 on:
   push:
     branches: [main]
-    paths: ['frontend/**', '.github/workflows/ci-cd.yml']
+    paths: ['frontend/**', 'deploy/**', '.github/workflows/ci-cd.yml']
   pull_request:
     branches: [main]
-    paths: ['frontend/**', '.github/workflows/ci-cd.yml']
+    paths: ['frontend/**', 'deploy/**', '.github/workflows/ci-cd.yml']
   workflow_dispatch:
 
 permissions:
@@ -146,11 +146,14 @@ jobs:
     concurrency:
       group: production
       cancel-in-progress: false
+    # The repository is public, and so are these logs. Rules for this job:
+    # - everything about the server (host, user, port, path, keys) is a secret, never a
+    #   variable: GitHub masks secrets as *** but prints variables in plain text;
+    # - each secret is passed only to the step that needs it, never to the whole job;
+    # - no set -x, no verbose flags, and error messages never include a value;
+    # - ssh and rsync run quiet, so their own error lines cannot echo the host or path.
+    # SITE_URL is the only plain variable: it is the public address of the site.
     env:
-      DEPLOY_HOST: ${{ vars.DEPLOY_HOST }}
-      DEPLOY_PORT: ${{ vars.DEPLOY_PORT || '22' }}
-      DEPLOY_USER: ${{ vars.DEPLOY_USER }}
-      DEPLOY_PATH: ${{ vars.DEPLOY_PATH }}
       SITE_URL: ${{ vars.SITE_URL }}
     steps:
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -160,17 +163,26 @@ jobs:
 
       - name: Set up SSH
         env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
         run: |
-          for name in DEPLOY_HOST DEPLOY_USER DEPLOY_PATH SITE_URL SSH_PRIVATE_KEY SSH_KNOWN_HOSTS; do
+          for name in DEPLOY_HOST DEPLOY_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS SITE_URL; do
             [ -n "${!name}" ] || { echo "::error::$name is not set in the production environment"; exit 1; }
           done
           install -m 700 -d ~/.ssh
-          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/deploy_key
+          # Secrets pasted from a Windows clipboard carry \r line endings, which OpenSSH cannot read.
+          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null 2>&1 || {
+            echo "::error::SSH_PRIVATE_KEY is not a valid private key: paste the whole file, from -----BEGIN to -----END, not the .pub"
+            exit 1
+          }
           # Pinned host key: never trust whatever answers on first connect.
-          printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
           cat > ~/.ssh/config <<EOF
           Host deploy
             HostName $DEPLOY_HOST
@@ -179,15 +191,36 @@ jobs:
             IdentityFile ~/.ssh/deploy_key
             IdentitiesOnly yes
             StrictHostKeyChecking yes
+            BatchMode yes
+            LogLevel QUIET
           EOF
+          chmod 600 ~/.ssh/config
 
       - name: Check the target directory
         # rsync --delete below empties whatever it points at: refuse anything that is not the live site.
-        run: ssh deploy "test -f '$DEPLOY_PATH/index.html'" || { echo "::error::$DEPLOY_PATH/index.html not found on the server"; exit 1; }
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          [ -n "$DEPLOY_PATH" ] || { echo "::error::DEPLOY_PATH is not set in the production environment"; exit 1; }
+          ssh deploy true 2>/dev/null || {
+            echo "::error::SSH login failed: check SSH_PRIVATE_KEY, SSH_KNOWN_HOSTS, DEPLOY_HOST/USER/PORT and authorized_keys on the server"
+            exit 1
+          }
+          ssh deploy "test -f '$DEPLOY_PATH/index.html'" 2>/dev/null || {
+            echo "::error::DEPLOY_PATH does not point at the live site (no index.html there)"
+            exit 1
+          }
 
       - name: Upload the build
         # --delay-updates puts every new file in place at the end, so visitors never see a half-copied site.
-        run: rsync -rlz --checksum --delete-delay --delay-updates --chmod=D755,F644 dist/ "deploy:$DEPLOY_PATH/"
+        env:
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+        run: |
+          rsync -rlz --quiet --checksum --delete-delay --delay-updates --chmod=D755,F644 \
+            dist/ "deploy:$DEPLOY_PATH/" 2>/dev/null || {
+            echo "::error::rsync to the server failed (exit code $?); see /var/log/auth.log on the server"
+            exit 1
+          }
 
       - name: Smoke test the live site
         run: |
@@ -206,3 +239,122 @@ jobs:
       - name: Remove the SSH key
         if: always()
         run: rm -rf ~/.ssh
+
+  charts:
+    name: Helm charts & manifests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: azure/setup-helm@9bc31f4ebc9c6b171d7bfbaa5d006ae7abdb4310 # v5.0.1
+        with:
+          version: v4.3.0
+
+      - name: Install kubeconform
+        run: |
+          curl -sSfL https://github.com/yannh/kubeconform/releases/download/v0.8.0/kubeconform-linux-amd64.tar.gz \
+            | tar xz -C /usr/local/bin kubeconform
+
+      - name: Lint, render and validate
+        env:
+          CRDS: https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json
+        run: |
+          for chart in deploy/charts/*/; do
+            name=$(basename "$chart")
+            [ -s "$chart/Chart.yaml" ] || { echo "skip $name (empty)"; continue; }
+            values=()
+            [ -f "$chart/values-prod.yaml" ] && values=(-f "$chart/values-prod.yaml")
+            helm lint "$chart" "${values[@]}"
+            helm template "$name" "$chart" -n "$name" "${values[@]}" > "rendered-$name.yaml"
+          done
+          mapfile -t manifests < <(find deploy/argocd -name '*.yaml' -size +0)
+          kubeconform -strict -summary -schema-location default -schema-location "$CRDS" \
+            rendered-*.yaml "${manifests[@]}"
+          deploy/scripts/check-resources.sh rendered-*.yaml
+
+  image:
+    name: Container image
+    needs: [verify, e2e, lighthouse, charts]
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: write
+    env:
+      IMAGE: ghcr.io/${{ github.repository }}:${{ github.sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
+        with:
+          context: frontend
+          push: true
+          tags: ${{ env.IMAGE }}
+          build-args: GIT_SHA=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: true
+          sbom: true
+
+      - name: Scan for known vulnerabilities
+        uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
+        with:
+          image-ref: ${{ env.IMAGE }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'
+
+  release:
+    name: Release to Kubernetes (GitOps)
+    # After the production switch: drop "deploy" from needs, add "environment: production".
+    needs: [image, deploy]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    concurrency:
+      group: release
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+
+      - name: Set the new image tag
+        env:
+          TAG: ${{ github.sha }}
+        run: |
+          yq -i '.image.tag = strenv(TAG)' deploy/charts/portfolio/values-prod.yaml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -am "deploy: portfolio ${TAG::7} [skip ci]"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+      - name: Wait for Argo CD and check the new version
+        if: vars.RELEASE_CHECK_URL != ''
+        env:
+          URL: ${{ vars.RELEASE_CHECK_URL }}
+        run: |
+          for attempt in $(seq 1 40); do
+            live=$(curl -fsS "$URL/version.txt" || true)
+            [ "$live" = "$GITHUB_SHA" ] && { echo "Live: ${GITHUB_SHA::7}"; exit 0; }
+            sleep 15
+          done
+          echo "::error::$URL did not serve version ${GITHUB_SHA::7} within 10 minutes"
+          exit 1
