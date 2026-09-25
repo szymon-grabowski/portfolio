@@ -1,6 +1,6 @@
 /**
- * Command Center content. Every card links somewhere real: replace each
- * `href: '#'` before publishing (repo, CI runs, dashboards, CV file…).
+ * Command Center content. Observability cards open the public, read-only Grafana and Argo CD.
+ * `href: '#'` marks cards without a target yet (Architecture, CV).
  */
 import type { IconName } from '../components/ModuleIcon.astro';
 

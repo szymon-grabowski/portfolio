@@ -4,8 +4,11 @@ admin:
   passwordKey: admin-password
 
 resources:
-  requests: { cpu: 20m, memory: 96Mi }
-  limits: { memory: 384Mi }   # first start (database migrations) needs ~200Mi
+  requests: { cpu: 20m, memory: 256Mi }
+  limits: { memory: 512Mi }   # public dashboards (Node Exporter Full) peak above 384Mi
+
+env:
+  GOMEMLIMIT: 450MiB          # Go GC works harder before hitting the container limit
 
 persistence:
   enabled: true
@@ -24,6 +27,8 @@ ingress:
   pathType: Prefix
 
 grafana.ini:
+  log:
+    level: warn
   server:
     domain: grafana.szymongrabowski.dev
     root_url: https://grafana.szymongrabowski.dev

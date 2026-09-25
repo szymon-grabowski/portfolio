@@ -17,6 +17,9 @@ loki:
           period: 24h
   limits_config:
     retention_period: 168h
+    query_timeout: 30s
+    max_query_series: 500
+    max_entries_limit_per_query: 2000
     ingestion_rate_mb: 2
     ingestion_burst_size_mb: 4
   compactor:
