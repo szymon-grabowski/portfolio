@@ -13,7 +13,34 @@ persistence:
 initChownData:
   enabled: false
 
+ingress:
+  enabled: true
+  ingressClassName: traefik
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: web   # TLS ends at host nginx until the switch
+  hosts:
+    - grafana.szymongrabowski.dev
+  path: /
+  pathType: Prefix
+
 grafana.ini:
+  server:
+    domain: grafana.szymongrabowski.dev
+    root_url: https://grafana.szymongrabowski.dev
+  auth.anonymous:            # public, read-only showcase; admin still logs in
+    enabled: true
+    org_name: Main Org.
+    org_role: Viewer
+    hide_version: true
+  users:
+    allow_sign_up: false
+    viewers_can_edit: false  # no Explore for anonymous visitors
+  security:
+    cookie_secure: true
+    disable_gravatar: true
+    allow_embedding: false
+  dashboards:
+    default_home_dashboard_path: /var/lib/grafana/dashboards/default/portfolio-overview.json
   analytics:
     reporting_enabled: false
     check_for_updates: false
@@ -34,3 +61,81 @@ datasources:
         uid: loki
         type: loki
         url: http://loki.monitoring.svc:3100
+
+dashboardProviders:
+  dashboardproviders.yaml:
+    apiVersion: 1
+    providers:
+      - name: default
+        orgId: 1
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+dashboards:
+  default:
+    node-exporter:
+      gnetId: 1860
+      revision: 45
+      datasource: Prometheus
+    kubernetes-pods:
+      gnetId: 15760
+      revision: 41
+      datasource:
+        - name: DS_PROMETHEUS
+          value: Prometheus
+    blackbox:
+      gnetId: 7587
+      revision: 3
+      datasource:
+        - name: DS_SIGNCL-PROMETHEUS
+          value: Prometheus
+    portfolio-overview:
+      json: |
+        {
+          "uid": "portfolio-overview",
+          "title": "Portfolio: what is happening",
+          "time": { "from": "now-24h", "to": "now" },
+          "refresh": "1m",
+          "panels": [
+            { "type": "stat", "title": "Site up", "gridPos": { "x": 0, "y": 0, "w": 6, "h": 4 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "targets": [ { "refId": "A", "expr": "probe_success{instance=\"https://szymongrabowski.dev/\"}" } ],
+              "fieldConfig": { "defaults": { "mappings": [ { "type": "value", "options": {
+                "0": { "text": "DOWN", "color": "red" }, "1": { "text": "UP", "color": "green" } } } ] } } },
+            { "type": "stat", "title": "Certificate valid (days)", "gridPos": { "x": 6, "y": 0, "w": 6, "h": 4 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "targets": [ { "refId": "A", "expr": "min((probe_ssl_earliest_cert_expiry - time()) / 86400)" } ],
+              "fieldConfig": { "defaults": { "decimals": 0 } } },
+            { "type": "stat", "title": "Node memory available", "gridPos": { "x": 12, "y": 0, "w": 6, "h": 4 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "targets": [ { "refId": "A", "expr": "node_memory_MemAvailable_bytes" } ],
+              "fieldConfig": { "defaults": { "unit": "bytes" } } },
+            { "type": "stat", "title": "Running pods", "gridPos": { "x": 18, "y": 0, "w": 6, "h": 4 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "targets": [ { "refId": "A", "expr": "sum(kube_pod_status_phase{phase=\"Running\"})" } ] },
+            { "type": "timeseries", "title": "Response time (s)", "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "targets": [ { "refId": "A", "expr": "probe_duration_seconds", "legendFormat": "{{instance}}" } ] },
+            { "type": "timeseries", "title": "Memory by namespace", "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
+              "datasource": { "type": "prometheus", "uid": "prometheus" },
+              "targets": [ { "refId": "A", "expr": "sum by (namespace) (container_memory_working_set_bytes{container!=\"\"})",
+                             "legendFormat": "{{namespace}}" } ],
+              "fieldConfig": { "defaults": { "unit": "bytes" } } },
+            { "type": "logs", "title": "Deployments (Argo CD)", "gridPos": { "x": 0, "y": 12, "w": 24, "h": 9 },
+              "datasource": { "type": "loki", "uid": "loki" },
+              "targets": [ { "refId": "A", "expr": "{namespace=\"argocd\", app=\"argocd-application-controller\"} |~ \"(?i)sync operation|updated sync status|updated health status\"" } ],
+              "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending" } },
+            { "type": "logs", "title": "Site access log (IPs anonymised)", "gridPos": { "x": 0, "y": 21, "w": 24, "h": 9 },
+              "datasource": { "type": "loki", "uid": "loki" },
+              "targets": [ { "refId": "A", "expr": "{namespace=\"portfolio\"}" } ],
+              "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending" } }
+          ]
+        }
+
+downloadDashboards:
+  resources:
+    requests: { cpu: 10m, memory: 16Mi }
+    limits: { memory: 64Mi }
