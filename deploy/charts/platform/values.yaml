@@ -1,0 +1,9 @@
+namespaces:
+  portfolio:
+    enforce: restricted
+    warn: restricted
+    audit: restricted
+  monitoring:
+    enforce: ""
+    warn: baseline
+    audit: baseline

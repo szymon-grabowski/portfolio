@@ -1,0 +1,25 @@
+image:
+  repository: ghcr.io/szymon-grabowski/portfolio
+  tag: ""                      # commit SHA, set in values-prod.yaml (never "latest")
+  pullPolicy: IfNotPresent
+
+replicas: 1
+
+resources:
+  requests:
+    cpu: 10m
+    memory: 32Mi
+  limits:
+    memory: 32Mi
+
+priorityClassName: site-critical
+
+ingress:
+  hosts: []
+  entrypoint: web
+  tls:
+    enabled: false
+    secretName: ""   # existing TLS Secret
+    certResolver: ""   # or Traefik ACME resolver
+  hsts: false
+  redirectWww: false

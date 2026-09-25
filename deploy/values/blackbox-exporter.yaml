@@ -1,0 +1,13 @@
+resources:
+  requests: { cpu: 10m, memory: 16Mi }
+  limits: { memory: 32Mi }
+serviceMonitor:
+  enabled: true
+  defaults:
+    interval: 60s
+    module: http_2xx
+  targets:
+    - name: production
+      url: https://szymongrabowski.dev/
+    - name: next
+      url: https://next.szymongrabowski.dev/
