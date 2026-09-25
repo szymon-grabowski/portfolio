@@ -1,0 +1,19 @@
+{{- range $name, $pss := .Values.namespaces }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ $name }}
+  labels:
+    {{- include "platform.labels" $ | nindent 4 }}
+    {{- with $pss.enforce }}
+    pod-security.kubernetes.io/enforce: {{ . }}
+    pod-security.kubernetes.io/enforce-version: latest
+    {{- end }}
+    {{- with $pss.warn }}
+    pod-security.kubernetes.io/warn: {{ . }}
+    {{- end }}
+    {{- with $pss.audit }}
+    pod-security.kubernetes.io/audit: {{ . }}
+    {{- end }}
+{{- end }}

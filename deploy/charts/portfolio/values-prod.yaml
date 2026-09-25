@@ -1,0 +1,7 @@
+image:
+  tag: "CHANGE_ME_COMMIT_SHA"
+
+ingress:
+  hosts:
+    - next.szymongrabowski.dev
+  entrypoint: web
