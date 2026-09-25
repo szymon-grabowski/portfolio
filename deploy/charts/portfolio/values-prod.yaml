@@ -1,6 +1,5 @@
 image:
-  tag: "CHANGE_ME_COMMIT_SHA"
-
+  tag: "c71f207edfafff4c176e77f6a36cc77ab7c5201d"
 ingress:
   hosts:
     - next.szymongrabowski.dev
