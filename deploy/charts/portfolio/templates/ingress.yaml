@@ -1,0 +1,43 @@
+{{- $mw := list -}}
+{{- if .Values.ingress.redirectWww }}{{ $mw = append $mw (printf "%s-redirect-www@kubernetescrd" .Release.Namespace) }}{{ end -}}
+{{- if .Values.ingress.hsts }}{{ $mw = append $mw (printf "%s-hsts@kubernetescrd" .Release.Namespace) }}{{ end -}}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: portfolio
+  labels:
+    {{- include "portfolio.labels" . | nindent 4 }}
+  annotations:
+    traefik.ingress.kubernetes.io/router.entrypoints: {{ .Values.ingress.entrypoint }}
+    {{- if .Values.ingress.tls.enabled }}
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    {{- with .Values.ingress.tls.certResolver }}
+    traefik.ingress.kubernetes.io/router.tls.certresolver: {{ . }}
+    {{- end }}
+    {{- end }}
+    {{- if $mw }}
+    traefik.ingress.kubernetes.io/router.middlewares: {{ join "," $mw }}
+    {{- end }}
+spec:
+  ingressClassName: traefik
+  {{- if and .Values.ingress.tls.enabled .Values.ingress.tls.secretName }}
+  tls:
+    - secretName: {{ .Values.ingress.tls.secretName }}
+      hosts:
+        {{- range .Values.ingress.hosts }}
+        - {{ . }}
+        {{- end }}
+  {{- end }}
+  rules:
+    {{- range .Values.ingress.hosts }}
+    - host: {{ . }}
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: portfolio
+                port:
+                  name: http
+    {{- end }}

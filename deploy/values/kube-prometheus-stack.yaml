@@ -1,0 +1,73 @@
+alertmanager:
+  enabled: false
+grafana:
+  enabled: false
+kubeApiServer:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeEtcd:
+  enabled: false
+kubeProxy:
+  enabled: false
+defaultRules:
+  create: false
+
+prometheusOperator:
+  resources:
+    requests: { cpu: 10m, memory: 48Mi }
+    limits: { memory: 96Mi }
+  admissionWebhooks:
+    patch:
+      resources:
+        requests: { cpu: 10m, memory: 16Mi }
+        limits: { memory: 32Mi }
+
+prometheus:
+  prometheusSpec:
+    scrapeInterval: 60s
+    evaluationInterval: 60s
+    retention: 7d
+    retentionSize: 4GB
+    resources:
+      requests: { cpu: 50m, memory: 256Mi }
+      limits: { memory: 512Mi }
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 6Gi
+
+kube-state-metrics:
+  resources:
+    requests: { cpu: 10m, memory: 32Mi }
+    limits: { memory: 96Mi }
+  metricAllowlist:
+    - kube_pod_.*
+    - kube_deployment_.*
+    - kube_node_.*
+    - kube_persistentvolumeclaim_.*
+    - kube_namespace_.*
+
+prometheus-node-exporter:
+  resources:
+    requests: { cpu: 10m, memory: 24Mi }
+    limits: { memory: 64Mi }
+  extraArgs:
+    - --collector.disable-defaults
+    - --collector.cpu
+    - --collector.meminfo
+    - --collector.filesystem
+    - --collector.loadavg
+    - --collector.netdev
+    - --collector.diskstats
+    - --collector.pressure
+    - --collector.textfile   # backup age metric
+    - --collector.textfile.directory=/host/root/var/lib/node_exporter/textfile
