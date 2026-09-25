@@ -31,8 +31,7 @@ spec:
     ingressRoute:
       dashboard:
         enabled: false
-    # Only after kube-prometheus-stack is installed (needs its CRDs):
-    # metrics:
-    #   prometheus:
-    #     serviceMonitor:
-    #       enabled: true
+    metrics:   # needs kube-prometheus-stack CRDs (installed)
+      prometheus:
+        serviceMonitor:
+          enabled: true

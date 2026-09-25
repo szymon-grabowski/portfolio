@@ -210,5 +210,5 @@ src/
 - **Text on the page:** `src/data/site.ts`
 - **Boot speed:** `BOOT_TIMING` in `src/data/boot.ts`
 - **New theme:** one entry in `src/data/themes.ts`; CSS and the picker update automatically
-- **Command Center cards and links:** `src/data/modules.ts` (every `href: '#'` still needs a real target)
+- **Command Center cards and links:** `src/data/modules.ts` (Architecture and CV still use `href: '#'`)
 - **Colors in new components:** only theme variables (`--accent`, `--accent-text`, `--muted`, `--ok`, `--line`, `--card`…), never hex values

@@ -16,6 +16,10 @@ defaultRules:
   create: false
 
 prometheusOperator:
+  prometheusConfigReloader:
+    resources:
+      requests: { cpu: 5m, memory: 16Mi }
+      limits: { memory: 32Mi }
   resources:
     requests: { cpu: 10m, memory: 48Mi }
     limits: { memory: 96Mi }
@@ -29,6 +33,10 @@ prometheus:
   prometheusSpec:
     scrapeInterval: 60s
     evaluationInterval: 60s
+    query:                   # public Grafana: no query may exhaust the node
+      maxSamples: 5000000
+      timeout: 30s
+      maxConcurrency: 4
     retention: 7d
     retentionSize: 4GB
     resources:
