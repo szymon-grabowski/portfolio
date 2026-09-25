@@ -1,4 +1,4 @@
-FROM docker.io/library/node:22-alpine AS build
+FROM docker.io/library/node:25-alpine AS build
 ARG GIT_SHA=dev
 WORKDIR /app
 COPY package.json package-lock.json ./
