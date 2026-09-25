@@ -14,11 +14,17 @@ configs:
   cm:
     timeout.reconciliation: 180s
     admin.enabled: true
+    # Traefik as NodePort never sets an Ingress address, so Argo CD would show "Progressing" forever.
+    # Remove after the production switch (Traefik as LoadBalancer).
+    resource.customizations.health.networking.k8s.io_Ingress: |
+      hs = {}
+      hs.status = "Healthy"
+      return hs
 
 controller:
   resources:
     requests: { cpu: 50m, memory: 256Mi }
-    limits: { memory: 384Mi }
+    limits: { memory: 768Mi }   # first sync of kube-prometheus-stack CRDs peaks above 384Mi
 repoServer:
   resources:
     requests: { cpu: 20m, memory: 128Mi }
