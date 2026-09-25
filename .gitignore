@@ -11,3 +11,4 @@ dist/
 # Systemowe
 .DS_Store
 *.log
+docs
