@@ -28,17 +28,17 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     wide: true,
     modules: [
       { title: 'Repository', status: 'synced', description: 'Source code\nand configuration', icon: 'git', href: 'https://github.com/szymon-grabowski/portfolio', external: true },
-      { title: 'CI/CD', status: 'pipeline green', description: 'Build, test\nand deploy', icon: 'githubactions', href: '#', external: true },
-      { title: 'Argo CD', status: 'healthy', description: 'GitOps\ndeployments', icon: 'argo', href: '#', external: true },
-      { title: 'Kubernetes', status: 'healthy', description: 'Cluster status\nand resources', icon: 'kubernetes', href: '#' },
+      { title: 'CI/CD', status: 'pipeline green', description: 'Build, test\nand deploy', icon: 'githubactions', href: 'https://github.com/szymon-grabowski/portfolio/actions', external: true },
+      { title: 'Argo CD', status: 'healthy', description: 'GitOps\ndeployments', icon: 'argo', href: 'https://argocd.szymongrabowski.dev', external: true },
+      { title: 'Kubernetes', status: 'healthy', description: 'Cluster status\nand resources', icon: 'kubernetes', href: 'https://grafana.szymongrabowski.dev/d/k8s_views_pods', external: true },
     ],
   },
   {
     label: 'OBSERVABILITY / METRICS / LOGS',
     modules: [
-      { title: 'Grafana', status: 'healthy', description: 'Metrics\nand dashboards', icon: 'grafana', href: '#', external: true },
-      { title: 'Prometheus', status: 'scraping', description: 'Metrics\nand alerting', icon: 'prometheus', href: '#', external: true },
-      { title: 'Loki', status: 'running', description: 'Log aggregation\nand search', icon: 'loki', href: '#', external: true },
+      { title: 'Grafana', status: 'healthy', description: 'Metrics\nand dashboards', icon: 'grafana', href: 'https://grafana.szymongrabowski.dev', external: true },
+      { title: 'Prometheus', status: 'scraping', description: 'Metrics\nand alerting', icon: 'prometheus', href: 'https://grafana.szymongrabowski.dev/d/rYdddlPWk', external: true },
+      { title: 'Loki', status: 'running', description: 'Log aggregation\nand search', icon: 'loki', href: 'https://grafana.szymongrabowski.dev/d/portfolio-overview', external: true },
     ],
   },
   {
