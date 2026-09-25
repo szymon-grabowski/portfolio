@@ -12,7 +12,15 @@ updates:
     groups:
       dev-dependencies:
         dependency-type: development
+    ignore:
+      - dependency-name: "@types/node"   # major follows the Node.js version in .nvmrc
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "typescript"    # until @astrojs/check supports the next major
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: docker
     directory: /frontend
     schedule:
       interval: weekly
+    ignore:
+      - dependency-name: "node"          # changed together with .nvmrc and @types/node
+        update-types: ["version-update:semver-major"]
