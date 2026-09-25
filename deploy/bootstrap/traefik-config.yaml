@@ -1,0 +1,38 @@
+# Copied to /var/lib/rancher/k3s/server/manifests/. Traefik chart v40: use service.spec.type, not service.type.
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    deployment:
+      replicas: 1
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+    service:
+      spec:
+        type: NodePort   # LoadBalancer at the production switch
+    ports:
+      web:
+        nodePort: 30080
+        # http:
+        #   redirections:
+        #     entryPoint:
+        #       to: websecure
+        #       scheme: https
+        #       permanent: true
+      websecure:
+        nodePort: 30443
+    ingressRoute:
+      dashboard:
+        enabled: false
+    # Only after kube-prometheus-stack is installed (needs its CRDs):
+    # metrics:
+    #   prometheus:
+    #     serviceMonitor:
+    #       enabled: true

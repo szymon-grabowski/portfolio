@@ -1,0 +1,6 @@
+write-kubeconfig-mode: "0600"
+secrets-encryption: true
+disable:
+  - servicelb   # remove at the production switch
+kube-proxy-arg:
+  - nodeport-addresses=127.0.0.1/32   # NodePorts only on localhost (iptables would bypass UFW)
