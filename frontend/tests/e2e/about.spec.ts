@@ -1,4 +1,4 @@
-import { CERTIFICATIONS, PROFILE, PROFILE_LINKS, PROJECTS } from '../../src/data/profile';
+import { CERTIFICATIONS, EXPERIENCE, PROFILE, PROFILE_LINKS, PROJECTS, SKILLS } from '../../src/data/profile';
 import { PROJECT_LINKS } from '../../src/data/project';
 import { expect, test } from './fixtures';
 
@@ -16,6 +16,17 @@ test.describe('2.1 about me', () => {
       if (link.external) await expect(card).toHaveAttribute('rel', /noopener/);
     }
     await expect(page.getByRole('link', { name: /Email/ })).toHaveAttribute('href', `mailto:${PROFILE.email}`);
+  });
+
+  test('experience, skills and education from profile.ts are all listed', async ({ page }) => {
+    const jobs = page.locator('.job');
+    await expect(jobs).toHaveCount(EXPERIENCE.length);
+    for (const [i, job] of EXPERIENCE.entries()) {
+      await expect(jobs.nth(i).locator('.job__title')).toContainText(job.role);
+      await expect(jobs.nth(i).locator('.job__period')).toHaveText(job.period);
+    }
+    await expect(page.locator('.skills__row')).toHaveCount(SKILLS.length);
+    await expect(page.getByRole('heading', { name: 'EDUCATION / LANGUAGES' })).toBeAttached();
   });
 
   test('CV is a disabled card until public/cv.pdf exists, then opens in a new tab', async ({ page }) => {

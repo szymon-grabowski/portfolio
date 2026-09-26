@@ -1,7 +1,9 @@
 ---
 import { existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { CERTIFICATIONS, CV_PATH, PROFILE, PROFILE_LINKS, PROJECTS } from '../data/profile';
+import {
+  CERTIFICATIONS, CV_PATH, EDUCATION, EXPERIENCE, LANGUAGES, PROFILE, PROFILE_LINKS, PROJECTS, SKILLS,
+} from '../data/profile';
 import LinkCard from './LinkCard.astro';
 import ScreenBar from './ScreenBar.astro';
 
@@ -11,13 +13,14 @@ const hasCv = existsSync(join(process.cwd(), 'public', CV_PATH));
 <section class="cc sub" aria-labelledby="about-title">
   <ScreenBar num="2.1" title="ABOUT ME" titleId="about-title" back="/command-center/" />
 
-  <div class="sub-grid sub-grid--about">
-    <section class="cc-group sub-panel" aria-label="PROFILE">
+  <section class="sub-grid sub-grid--about sub-grid--scroll" tabindex="0" aria-label="About me content">
+    <section class="cc-group sub-panel sub-panel--profile" aria-label="PROFILE">
       <h2 class="cc-group__label">PROFILE</h2>
       <p class="profile__name">{PROFILE.name}</p>
       <p class="profile__role">{PROFILE.role}</p>
+      <p class="profile__location">{PROFILE.location}</p>
       {PROFILE.bio.map((line) => <p class="sub-text">{line}</p>)}
-      <ul class="chips" aria-label="Focus areas">
+      <ul class="chips" aria-label="Core stack">
         {PROFILE.focus.map((item) => <li>{item}</li>)}
       </ul>
     </section>
@@ -32,34 +35,77 @@ const hasCv = existsSync(join(process.cwd(), 'public', CV_PATH));
       </div>
     </section>
 
-    {CERTIFICATIONS.length > 0 && (
-      <section class="cc-group sub-panel" aria-label="CERTIFICATIONS">
-        <h2 class="cc-group__label">CERTIFICATIONS</h2>
-        <ul class="entries">
-          {CERTIFICATIONS.map((cert) => (
-            <li>
-              {cert.href
-                ? <a href={cert.href} target="_blank" rel="noopener">{cert.name}</a>
-                : <span>{cert.name}</span>}
-              <span class="entries__meta">{cert.issuer} · {cert.date}</span>
-            </li>
-          ))}
-        </ul>
-      </section>
-    )}
+    <section class="cc-group sub-panel sub-panel--experience" aria-label="EXPERIENCE">
+      <h2 class="cc-group__label">EXPERIENCE</h2>
+      <ol class="timeline">
+        {EXPERIENCE.map((job) => (
+          <li class="job">
+            <div class="job__head">
+              <h3 class="job__title">{job.role} <span class="job__company">· {job.company}</span></h3>
+              <span class="job__period">{job.period}</span>
+            </div>
+            {job.context && <p class="job__context">{job.context}</p>}
+            <ul class="bullets">
+              {job.points.map((point) => <li>{point}</li>)}
+            </ul>
+          </li>
+        ))}
+      </ol>
+    </section>
 
-    {PROJECTS.length > 0 && (
-      <section class="cc-group sub-panel" aria-label="OTHER PROJECTS">
-        <h2 class="cc-group__label">OTHER PROJECTS</h2>
-        <ul class="entries">
-          {PROJECTS.map((project) => (
-            <li>
-              <a href={project.href} target="_blank" rel="noopener">{project.name}</a>
-              <span class="entries__meta">{project.description}</span>
-            </li>
+    <div class="sub-stack">
+      <section class="cc-group sub-panel" aria-label="SKILLS">
+        <h2 class="cc-group__label">SKILLS</h2>
+        <dl class="skills">
+          {SKILLS.map((group) => (
+            <div class="skills__row">
+              <dt>{group.label}</dt>
+              <dd>{group.items.join(' · ')}</dd>
+            </div>
           ))}
+        </dl>
+      </section>
+
+      <section class="cc-group sub-panel" aria-label="EDUCATION / LANGUAGES">
+        <h2 class="cc-group__label">EDUCATION / LANGUAGES</h2>
+        <ul class="entries">
+          <li>
+            <span>{EDUCATION.degree}</span>
+            <span class="entries__meta">{EDUCATION.school} · {EDUCATION.period}</span>
+          </li>
+          {LANGUAGES.map((lang) => <li><span class="entries__meta">{lang}</span></li>)}
         </ul>
       </section>
-    )}
-  </div>
+
+      {CERTIFICATIONS.length > 0 && (
+        <section class="cc-group sub-panel" aria-label="CERTIFICATIONS">
+          <h2 class="cc-group__label">CERTIFICATIONS</h2>
+          <ul class="entries">
+            {CERTIFICATIONS.map((cert) => (
+              <li>
+                {cert.href
+                  ? <a href={cert.href} target="_blank" rel="noopener">{cert.name}</a>
+                  : <span>{cert.name}</span>}
+                <span class="entries__meta">{cert.issuer} · {cert.date}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {PROJECTS.length > 0 && (
+        <section class="cc-group sub-panel" aria-label="OTHER PROJECTS">
+          <h2 class="cc-group__label">OTHER PROJECTS</h2>
+          <ul class="entries">
+            {PROJECTS.map((project) => (
+              <li>
+                <a href={project.href} target="_blank" rel="noopener">{project.name}</a>
+                <span class="entries__meta">{project.description}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
+  </section>
 </section>
