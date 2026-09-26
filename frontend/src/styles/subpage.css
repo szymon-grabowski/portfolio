@@ -87,10 +87,10 @@ a.link-card:hover { background: var(--card-hover); border-color: var(--accent); 
 .link-card__ext { flex: none; margin-left: auto; color: var(--accent-text); }
 .link-card--disabled { opacity: 0.55; }
 
-/* Link card with an icon button on the right (email + copy). */
+/* Link card with an icon button on the right (CV + download, email + copy). */
 .link-split { display: flex; gap: 8px; }
 .link-split .link-card { flex: 1; }
-.copy-btn {
+.icon-btn {
   flex: none;
   display: grid; place-items: center;
   width: 48px;
@@ -99,9 +99,10 @@ a.link-card:hover { background: var(--card-hover); border-color: var(--accent); 
   border: 1px solid var(--dim);
   border-radius: 6px;
   cursor: pointer;
+  text-decoration: none;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
-.copy-btn:hover { background: var(--card-hover); border-color: var(--accent); color: var(--text); }
+.icon-btn:hover { background: var(--card-hover); border-color: var(--accent); color: var(--text); }
 .copy-btn__icon { grid-area: 1 / 1; transition: opacity 0.15s ease; }
 .copy-btn__icon--done { opacity: 0; color: var(--ok); }
 .copy-btn.is-copied { border-color: var(--ok); }

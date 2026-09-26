@@ -33,6 +33,8 @@ export interface Project {
 }
 
 export const CV_PATH = '/cv.pdf';
+/** File name offered by the download button. */
+export const CV_FILENAME = 'Szymon-Grabowski-CV.pdf';
 
 export const PROFILE = {
   name: 'Szymon Grabowski',

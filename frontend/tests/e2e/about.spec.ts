@@ -37,6 +37,9 @@ test.describe('2.1 about me', () => {
     } else {
       await expect(cv).toHaveAttribute('href', '/cv.pdf');
       await expect(cv).toHaveAttribute('target', '_blank');
+      const download = page.waitForEvent('download');
+      await page.getByRole('link', { name: 'Download CV' }).click();
+      expect((await download).suggestedFilename()).toBe('Szymon-Grabowski-CV.pdf');
     }
   });
 
