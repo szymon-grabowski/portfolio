@@ -1,0 +1,32 @@
+{{- if .Values.statusApi.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: portfolio-status-api
+  labels:
+    {{- include "portfolio.labels" . | nindent 4 }}
+data:
+  # Included in the server block of the image's nginx.conf (/etc/nginx/site.d/*.conf).
+  status-api.conf: |
+    location = /api/status {
+      limit_except GET { deny all; }
+      include /etc/nginx/security-headers.conf;
+      add_header Cache-Control "no-cache" always;
+      # Empty value = header not sent, so only the site's own origins may read it cross-origin.
+      set $cors "";
+      if ($http_origin ~ "{{ .Values.statusApi.allowedOrigins }}") { set $cors $http_origin; }
+      add_header Access-Control-Allow-Origin $cors always;
+      add_header Vary Origin always;
+
+      resolver {{ .Values.statusApi.resolver }} valid=30s ipv6=off;
+      set $prometheus {{ .Values.statusApi.prometheusUrl }};
+      # With a variable in proxy_pass the URI is used as written: the visitor's query string is dropped.
+      proxy_pass $prometheus/api/v1/query?query=site_status;
+      proxy_pass_request_body off;
+      proxy_set_header Content-Length "";
+      proxy_set_header Cookie "";
+      proxy_set_header Authorization "";
+      proxy_connect_timeout 2s;
+      proxy_read_timeout 5s;
+    }
+{{- end }}

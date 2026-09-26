@@ -20,4 +20,18 @@ spec:
       ports:
         - port: 8080
           protocol: TCP
+  {{- if .Values.statusApi.enabled }}
+  egress:
+    - to:            # /api/status reads Prometheus (DNS is allowed by the platform chart)
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: monitoring
+          podSelector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus
+      ports:
+        - port: 9090
+          protocol: TCP
+  {{- else }}
   egress: []
+  {{- end }}

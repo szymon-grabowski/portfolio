@@ -19,6 +19,10 @@ spec:
     metadata:
       labels:
         {{- include "portfolio.selectorLabels" . | nindent 8 }}
+      {{- if .Values.statusApi.enabled }}
+      annotations:
+        checksum/status-api: {{ include (print $.Template.BasePath "/status-api.yaml") . | sha256sum }}
+      {{- end }}
     spec:
       priorityClassName: {{ .Values.priorityClassName }}
       automountServiceAccountToken: false
@@ -52,8 +56,18 @@ spec:
           volumeMounts:
             - name: tmp            # nginx.conf keeps pid and temp files in /tmp
               mountPath: /tmp
+            {{- if .Values.statusApi.enabled }}
+            - name: status-api
+              mountPath: /etc/nginx/site.d
+              readOnly: true
+            {{- end }}
       volumes:
         - name: tmp
           emptyDir:
             medium: Memory
             sizeLimit: 8Mi
+        {{- if .Values.statusApi.enabled }}
+        - name: status-api
+          configMap:
+            name: portfolio-status-api
+        {{- end }}

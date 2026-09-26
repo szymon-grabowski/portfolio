@@ -8,4 +8,7 @@ html {
   --line: color-mix(in srgb, var(--accent) 25%, transparent);
   --card: color-mix(in srgb, var(--accent) 3%, transparent);
   --card-hover: color-mix(in srgb, var(--accent) 8%, transparent);
+  /* Health states for live LEDs (scripts/status.ts): same in every theme. */
+  --bad: #f26d6d;
+  --unknown: var(--muted);
 }

@@ -1,6 +1,36 @@
 resources:
   requests: { cpu: 10m, memory: 32Mi }     # 24h peak 32Mi (hit the old limit)
   limits: { memory: 48Mi }
+
+config:
+  modules:
+    http_2xx:                   # chart default, repeated because this map replaces it
+      prober: http
+      timeout: 5s
+      http:
+        valid_http_versions: ["HTTP/1.1", "HTTP/2.0"]
+        follow_redirects: true
+        preferred_ip_protocol: "ip4"
+    # Latest finished CI run on main must have succeeded.
+    github_ci_success:
+      prober: http
+      timeout: 10s
+      http:
+        preferred_ip_protocol: "ip4"
+        headers:
+          Accept: application/vnd.github+json
+        fail_if_body_not_matches_regexp: ['"conclusion": *"success"']
+    # Every Argo CD application Synced; none Degraded or Missing (Progressing during a rollout is fine).
+    argocd_apps_healthy:
+      prober: http
+      timeout: 10s
+      http:
+        preferred_ip_protocol: "ip4"
+        fail_if_body_not_matches_regexp: ['"Synced"']
+        fail_if_body_matches_regexp: ['"status":"(OutOfSync|Unknown|Degraded|Missing|Suspended)"']
+
+# Each target feeds a site_status check (recording rules in kube-prometheus-stack.yaml),
+# shown as the LEDs on the Command Center cards.
 serviceMonitor:
   enabled: true
   defaults:
@@ -11,3 +41,18 @@ serviceMonitor:
       url: https://szymongrabowski.dev/
     - name: next
       url: https://next.szymongrabowski.dev/
+    - name: repository
+      url: https://github.com/szymon-grabowski/portfolio
+      interval: 5m
+    - name: ci
+      # Unauthenticated GitHub API: 60 requests/hour per IP, so every 5 minutes.
+      url: https://api.github.com/repos/szymon-grabowski/portfolio/actions/runs?branch=main&event=push&status=completed&per_page=1
+      module: github_ci_success
+      interval: 5m
+    - name: argocd
+      url: https://argocd.szymongrabowski.dev/api/v1/applications?fields=items.metadata.name,items.status.sync.status,items.status.health
+      module: argocd_apps_healthy
+    - name: grafana
+      url: https://grafana.szymongrabowski.dev/api/health
+    - name: loki
+      url: http://loki.monitoring.svc:3100/ready

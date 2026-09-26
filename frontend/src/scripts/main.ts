@@ -2,6 +2,7 @@
 import { initBootSequence } from './boot-sequence';
 import { initMonitorFit } from './monitor-fit';
 import { initStartButton } from './start-button';
+import { initStatus } from './status';
 import { initThemePicker } from './theme-picker';
 import { BOOT_SESSION_KEY } from '../data/boot';
 import { writeStorage } from './storage';
@@ -9,6 +10,7 @@ import { writeStorage } from './storage';
 initMonitorFit();
 const boot = initBootSequence(); // null on pages without the boot screen
 initStartButton();
+initStatus();
 initThemePicker({
   onReplay: () => {
     if (boot) return boot.replay();
