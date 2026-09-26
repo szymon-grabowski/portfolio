@@ -3,7 +3,7 @@
  * (set by scripts/monitor-fit.ts when the window is large enough).
  * Without it the screen content simply fills the window.
  */
-.gridline, .monitor-neck, .monitor-foot { display: none; }
+.monitor-neck, .monitor-foot { display: none; }
 
 body:not(.framed) :is(.scene, .rig, .monitor, .screen) { height: 100%; }
 
@@ -30,13 +30,6 @@ body.framed .scene {
   display: flex; align-items: center; justify-content: center;
   overflow: hidden;
 }
-
-/* Faint guide lines behind the monitor. */
-body.framed .gridline { display: block; position: absolute; background: var(--faint); pointer-events: none; }
-.gl-v1 { left: 60px;  top: 0; bottom: 0; width: 1px; }
-.gl-v2 { right: 60px; top: 0; bottom: 0; width: 1px; }
-.gl-h1 { top: 40px;    left: 0; right: 0; height: 1px; }
-.gl-h2 { bottom: 60px; left: 0; right: 0; height: 1px; }
 
 /* The whole monitor is scaled as one unit from its center. */
 body.framed .rig {
