@@ -11,9 +11,9 @@ spec:
     resources:
       requests:
         cpu: 50m
-        memory: 64Mi
+        memory: 128Mi   # 24h peak 127Mi
       limits:
-        memory: 128Mi
+        memory: 192Mi
     service:
       spec:
         type: NodePort   # LoadBalancer at the production switch

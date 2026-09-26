@@ -4,11 +4,11 @@ admin:
   passwordKey: admin-password
 
 resources:
-  requests: { cpu: 20m, memory: 256Mi }
-  limits: { memory: 512Mi }   # public dashboards (Node Exporter Full) peak above 384Mi
+  requests: { cpu: 20m, memory: 512Mi }   # 24h peak 512Mi (Node Exporter Full, anonymous visitors)
+  limits: { memory: 640Mi }
 
 env:
-  GOMEMLIMIT: 450MiB          # Go GC works harder before hitting the container limit
+  GOMEMLIMIT: 560MiB          # Go GC works harder before hitting the container limit
 
 persistence:
   enabled: true
@@ -78,6 +78,16 @@ dashboardProviders:
         editable: false
         options:
           path: /var/lib/grafana/dashboards/default
+      - name: custom           # vendored + patched JSON from deploy/dashboards
+        orgId: 1
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/custom
+
+dashboardsConfigMaps:
+  custom: grafana-dashboards-custom
 
 dashboards:
   default:
@@ -85,12 +95,6 @@ dashboards:
       gnetId: 1860
       revision: 45
       datasource: Prometheus
-    kubernetes-pods:
-      gnetId: 15760
-      revision: 41
-      datasource:
-        - name: DS_PROMETHEUS
-          value: Prometheus
     blackbox:
       gnetId: 7587
       revision: 3

@@ -35,16 +35,16 @@ configs:
 
 controller:
   resources:
-    requests: { cpu: 50m, memory: 256Mi }
-    limits: { memory: 768Mi }   # first sync of kube-prometheus-stack CRDs peaks above 384Mi
+    requests: { cpu: 50m, memory: 448Mi }   # 24h peak 432Mi (syncing kube-prometheus-stack CRDs)
+    limits: { memory: 768Mi }
 repoServer:
   resources:
     requests: { cpu: 20m, memory: 128Mi }
     limits: { memory: 256Mi }
 server:
   resources:
-    requests: { cpu: 10m, memory: 64Mi }
-    limits: { memory: 128Mi }
+    requests: { cpu: 10m, memory: 128Mi }   # 24h peak 113Mi
+    limits: { memory: 192Mi }
   ingress:
     enabled: true
     ingressClassName: traefik
@@ -53,7 +53,7 @@ server:
       traefik.ingress.kubernetes.io/router.entrypoints: web   # TLS ends at host nginx until the switch
 redis:
   resources:
-    requests: { cpu: 10m, memory: 32Mi }
+    requests: { cpu: 10m, memory: 48Mi }    # 24h peak 31Mi
     limits: { memory: 64Mi }
 redisSecretInit:
   resources:
