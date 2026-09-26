@@ -37,7 +37,7 @@ export const PROFILE = {
   role: 'DevOps / Cloud Engineer',
   location: 'Racibórz, Poland · remote or hybrid in Silesia',
   bio: [
-    'I came to DevOps from the operations side. Two years of keeping real users, devices and systems running taught me what breaks at 8 a.m. on a Monday, and I now build platforms so it does not: declared in code, shipped through pipelines, observable and locked down from day one.',
+    'I came to DevOps from the operations side. Two years of keeping real users, devices and systems running showed me what breaks at 8 a.m. on a Monday. Now I build platforms that prevent it: infrastructure declared in code, every change shipped through a pipeline, and every service monitored and secured from day one.',
     'At CloudForge I design and build AWS environments with Terraform and Terragrunt, GitLab CI/CD pipelines without static cloud credentials, and Kubernetes delivery with Helm and Argo CD, under the review of senior DevOps engineers. This site is a platform I run end to end myself; 2.2 shows how.',
   ],
   focus: ['AWS', 'Terraform / Terragrunt', 'Kubernetes · Helm · Argo CD', 'GitLab CI/CD', 'Prometheus · Grafana', 'Linux'],
