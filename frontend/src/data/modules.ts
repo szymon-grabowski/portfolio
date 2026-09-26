@@ -38,7 +38,7 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     modules: [
       { title: 'Grafana', status: 'healthy', description: 'Metrics\nand dashboards', icon: 'grafana', href: 'https://grafana.szymongrabowski.dev', external: true },
       { title: 'Prometheus', status: 'scraping', description: 'Metrics\nand alerting', icon: 'prometheus', href: 'https://grafana.szymongrabowski.dev/d/rYdddlPWk', external: true },
-      { title: 'Loki', status: 'running', description: 'Log aggregation\nand search', icon: 'loki', href: 'https://grafana.szymongrabowski.dev/d/portfolio-overview', external: true },
+      { title: 'Loki', status: 'running', description: 'Log aggregation\nand search', icon: 'loki', href: 'https://grafana.szymongrabowski.dev/d/portfolio-logs', external: true },
     ],
   },
   {
