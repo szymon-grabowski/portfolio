@@ -35,16 +35,17 @@ configs:
 
 controller:
   resources:
-    requests: { cpu: 50m, memory: 448Mi }   # 24h peak 432Mi (syncing kube-prometheus-stack CRDs)
-    limits: { memory: 768Mi }
+    requests: { cpu: 50m, memory: 512Mi }   # 24h peak 506Mi (syncing kube-prometheus-stack CRDs)
+    limits: { memory: 1Gi }
 repoServer:
   resources:
-    requests: { cpu: 20m, memory: 128Mi }
-    limits: { memory: 256Mi }
+    requests: { cpu: 20m, memory: 160Mi }   # 24h peak 150Mi
+    limits: { memory: 384Mi }
 server:
   resources:
     requests: { cpu: 10m, memory: 128Mi }   # 24h peak 113Mi
-    limits: { memory: 192Mi }
+    # Anonymous visitors can open the diff of kube-prometheus-stack (~11 MB of JSON): OOMKilled at 128Mi.
+    limits: { memory: 512Mi }
   ingress:
     enabled: true
     ingressClassName: traefik
