@@ -1,6 +1,7 @@
 # Dashboards vendored and patched for this cluster; mounted into Grafana (provider "custom").
-# kubernetes-pods.json: grafana.com 15760 rev 41 - taller Information row (Grafana 13 blanks h:2 stats),
-# empty-state texts instead of "No data", Priority Class shows "none" for pods without a class.
+# kubernetes-pods.json: grafana.com 15760 rev 41 - taller Information row,
+# empty-state texts instead of "No data", Priority Class shows "none" for pods without a class,
+# single-select pod variable (Information stats match one pod), Created by = author, Pod age instead of Pod IP.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: monitoring

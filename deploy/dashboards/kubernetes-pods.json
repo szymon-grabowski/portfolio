@@ -77,27 +77,8 @@
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${datasource}"
-      },
-      "description": "Panel only works when a single pod is selected.",
-      "fieldConfig": {
-        "defaults": {
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "rgb(255, 255, 255)",
-                "value": 0
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
+      "type": "text",
+      "title": "Created by",
       "gridPos": {
         "h": 3,
         "w": 12,
@@ -106,40 +87,9 @@
       },
       "id": 2,
       "options": {
-        "colorMode": "none",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "standard",
-        "reduceOptions": {
-          "calcs": [
-            "mean"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": false,
-        "textMode": "name",
-        "wideLayout": true
-      },
-      "pluginVersion": "12.2.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${datasource}"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "kube_pod_info{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"}",
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{ created_by_kind }}: {{ created_by_name }}",
-          "refId": "A"
-        }
-      ],
-      "title": "Created by",
-      "type": "stat"
+        "mode": "markdown",
+        "content": "## Grabowski Szymon"
+      }
     },
     {
       "datasource": {
@@ -217,7 +167,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Panel only works when a single pod is selected.",
+      "description": "Time since the pod started.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -230,7 +180,8 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "dtdurations",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -255,7 +206,7 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "name",
+        "textMode": "value",
         "wideLayout": true
       },
       "pluginVersion": "12.2.1",
@@ -267,14 +218,14 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_info{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"}",
+          "expr": "time() - kube_pod_start_time{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"}",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{ pod_ip }}",
+          "legendFormat": "__auto",
           "refId": "A"
         }
       ],
-      "title": "Pod IP",
+      "title": "Pod age",
       "type": "stat"
     },
     {
@@ -2848,19 +2799,14 @@
         "type": "query"
       },
       {
-        "allValue": ".*",
-        "current": {
-          "selected": false,
-          "text": "",
-          "value": ""
-        },
+        "current": {},
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
         "definition": "label_values(kube_pod_info{namespace=\"$namespace\", cluster=\"$cluster\"}, pod)",
-        "includeAll": true,
-        "multi": true,
+        "includeAll": false,
+        "multi": false,
         "name": "pod",
         "options": [],
         "query": {
