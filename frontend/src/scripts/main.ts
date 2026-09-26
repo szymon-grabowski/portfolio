@@ -2,6 +2,7 @@
 import { initBootSequence } from './boot-sequence';
 import { initCopyButtons } from './copy-button';
 import { initMonitorFit } from './monitor-fit';
+import { initStackDetails } from './stack-details';
 import { initStartButton } from './start-button';
 import { initStatus } from './status';
 import { initThemePicker } from './theme-picker';
@@ -13,6 +14,7 @@ const boot = initBootSequence(); // null on pages without the boot screen
 initStartButton();
 initStatus();
 initCopyButtons();
+initStackDetails();
 initThemePicker({
   onReplay: () => {
     if (boot) return boot.replay();

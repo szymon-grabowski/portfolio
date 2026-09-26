@@ -54,6 +54,32 @@ body.framed .sub-grid--scroll {
   border-radius: 4px;
 }
 
+/* Stack chips on 2.2 are buttons: hover / focus previews, pressed = pinned. */
+.chips--interactive li { padding: 0; border: 0; background: none; }
+.chip {
+  padding: 4px 9px;
+  font: inherit; font-size: 11px;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--dim);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.chip:hover, .chip:focus-visible { background: var(--card-hover); border-color: var(--accent); }
+.chip[aria-pressed='true'] { color: var(--bg); background: var(--accent-text); border-color: var(--accent-text); }
+.stack-detail {
+  margin: auto 0 0;
+  padding: 10px 12px;
+  min-height: 58px;
+  font-size: 12px; line-height: 1.5;
+  color: var(--muted);
+  border: 1px dashed var(--dim);
+  border-radius: 6px;
+}
+.stack-detail.is-active { color: var(--text); border-style: solid; border-color: var(--accent); }
+.stack-detail__name { font-weight: 700; color: var(--accent-text); }
+
 .bullets { margin: 2px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.5; }
 .bullets li { display: flex; gap: 8px; color: var(--muted); }
 .bullets li::before { content: '›'; color: var(--accent-text); }

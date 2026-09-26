@@ -1,5 +1,5 @@
 ---
-import { ARCHITECTURE, PRINCIPLES, PROJECT_GOAL, PROJECT_LINKS, STACK } from '../data/project';
+import { ARCHITECTURE, PRINCIPLES, PROJECT_GOAL, PROJECT_LINKS, STACK, STACK_HINT } from '../data/project';
 import LinkCard from './LinkCard.astro';
 import ScreenBar from './ScreenBar.astro';
 ---
@@ -17,9 +17,17 @@ import ScreenBar from './ScreenBar.astro';
 
     <section class="cc-group sub-panel" aria-label="STACK">
       <h2 class="cc-group__label">STACK</h2>
-      <ul class="chips">
-        {STACK.map((item) => <li>{item}</li>)}
+      <!-- scripts/stack-details.ts: hover / focus shows the role, a click keeps it. -->
+      <ul class="chips chips--interactive" data-stack>
+        {STACK.map((item) => (
+          <li>
+            <button type="button" class="chip" data-role={item.role} aria-pressed="false" aria-describedby="stack-detail">{item.name}</button>
+          </li>
+        ))}
       </ul>
+      <p class="stack-detail" id="stack-detail" aria-live="polite" data-stack-detail data-hint={STACK_HINT}>
+        <span class="stack-detail__name"></span> <span class="stack-detail__text">{STACK_HINT}</span>
+      </p>
     </section>
 
     <section class="cc-group sub-panel sub-panel--wide" aria-label="ARCHITECTURE">
