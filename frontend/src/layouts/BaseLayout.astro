@@ -37,6 +37,12 @@ const { title = SITE.title, description = SITE.description } = Astro.props;
         const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
         if (!reduced && sessionStorage.getItem(bootKey) !== '1') root.classList.add('boot-pending');
       } catch {}
+      // Chrome aborts a cross-page view transition when the viewport resizes mid-way (mobile
+      // address bar while scrolling); the page then simply appears. Keep that out of the console.
+      addEventListener('pagereveal', (e) => {
+        const vt = e.viewTransition;
+        if (vt) for (const p of [vt.ready, vt.finished, vt.updateCallbackDone]) p.catch(() => {});
+      });
     </script>
   </head>
   <body>
