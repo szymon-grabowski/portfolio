@@ -1,0 +1,8 @@
+---
+import ScreenLayout from '../layouts/ScreenLayout.astro';
+import AboutProject from '../components/AboutProject.astro';
+import { SITE } from '../data/site';
+---
+<ScreenLayout title={SITE.projectTitle} description={SITE.projectDescription}>
+  <AboutProject />
+</ScreenLayout>

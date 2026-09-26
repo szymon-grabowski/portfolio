@@ -1,0 +1,65 @@
+---
+import { existsSync } from 'node:fs';
+import { join } from 'node:path';
+import { CERTIFICATIONS, CV_PATH, PROFILE, PROFILE_LINKS, PROJECTS } from '../data/profile';
+import LinkCard from './LinkCard.astro';
+import ScreenBar from './ScreenBar.astro';
+
+// The build runs in frontend/, so public/ holds the files served at the site root.
+const hasCv = existsSync(join(process.cwd(), 'public', CV_PATH));
+---
+<section class="cc sub" aria-labelledby="about-title">
+  <ScreenBar num="2.1" title="ABOUT ME" titleId="about-title" back="/command-center/" />
+
+  <div class="sub-grid sub-grid--about">
+    <section class="cc-group sub-panel" aria-label="PROFILE">
+      <h2 class="cc-group__label">PROFILE</h2>
+      <p class="profile__name">{PROFILE.name}</p>
+      <p class="profile__role">{PROFILE.role}</p>
+      {PROFILE.bio.map((line) => <p class="sub-text">{line}</p>)}
+      <ul class="chips" aria-label="Focus areas">
+        {PROFILE.focus.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <section class="cc-group sub-panel" aria-label="CV / LINKS / CONTACT">
+      <h2 class="cc-group__label">CV / LINKS / CONTACT</h2>
+      <div class="link-list">
+        <LinkCard title="CV" icon="document" external
+                  description={hasCv ? 'PDF, opens in a new tab' : 'Coming soon'}
+                  href={hasCv ? CV_PATH : undefined} />
+        {PROFILE_LINKS.map((link) => <LinkCard {...link} />)}
+      </div>
+    </section>
+
+    {CERTIFICATIONS.length > 0 && (
+      <section class="cc-group sub-panel" aria-label="CERTIFICATIONS">
+        <h2 class="cc-group__label">CERTIFICATIONS</h2>
+        <ul class="entries">
+          {CERTIFICATIONS.map((cert) => (
+            <li>
+              {cert.href
+                ? <a href={cert.href} target="_blank" rel="noopener">{cert.name}</a>
+                : <span>{cert.name}</span>}
+              <span class="entries__meta">{cert.issuer} · {cert.date}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    {PROJECTS.length > 0 && (
+      <section class="cc-group sub-panel" aria-label="OTHER PROJECTS">
+        <h2 class="cc-group__label">OTHER PROJECTS</h2>
+        <ul class="entries">
+          {PROJECTS.map((project) => (
+            <li>
+              <a href={project.href} target="_blank" rel="noopener">{project.name}</a>
+              <span class="entries__meta">{project.description}</span>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+  </div>
+</section>

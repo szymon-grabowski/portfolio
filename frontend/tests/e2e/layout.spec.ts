@@ -1,6 +1,6 @@
 import { expect, test } from './fixtures';
 
-const PAGES = ['/', '/command-center/'];
+const PAGES = ['/', '/command-center/', '/about/', '/project/'];
 
 for (const path of PAGES) {
   test.describe(`layout ${path}`, () => {
