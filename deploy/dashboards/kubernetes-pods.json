@@ -116,7 +116,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_info{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"}",
+          "expr": "kube_pod_info{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "{{ node }}",
@@ -170,7 +170,7 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "value",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "pluginVersion": "12.2.1",
@@ -182,10 +182,10 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "time() - kube_pod_start_time{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"}",
+          "expr": "time() - kube_pod_start_time{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}",
           "instant": true,
           "interval": "",
-          "legendFormat": "__auto",
+          "legendFormat": "{{pod}}",
           "refId": "A"
         }
       ],
@@ -248,7 +248,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_replace(kube_pod_info{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"}, \"priority_class\", \"none\", \"priority_class\", \"\")",
+          "expr": "label_replace(kube_pod_info{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}, \"priority_class\", \"none\", \"priority_class\", \"\")",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -347,7 +347,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_status_qos_class{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"} > 0",
+          "expr": "kube_pod_status_qos_class{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"} > 0",
           "instant": true,
           "interval": "",
           "legendFormat": "{{ qos_class }}",
@@ -415,7 +415,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_container_status_last_terminated_reason{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"}",
+          "expr": "kube_pod_container_status_last_terminated_reason{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "{{ reason }}",
@@ -487,7 +487,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_container_status_last_terminated_exitcode{namespace=\"$namespace\", pod=\"$pod\", cluster=\"$cluster\"}",
+          "expr": "kube_pod_container_status_last_terminated_exitcode{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}",
           "instant": true,
           "interval": "",
           "legendFormat": "__auto",
@@ -2765,25 +2765,33 @@
         "allowCustomValue": false
       },
       {
-        "current": {},
+        "current": {
+          "text": [
+            "All"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
-        "definition": "label_values(kube_pod_info{namespace=\"$namespace\", cluster=\"$cluster\"}, pod)",
-        "includeAll": false,
-        "multi": false,
+        "definition": "query_result(kube_pod_info{namespace=\"$namespace\", cluster=\"$cluster\"})",
+        "includeAll": true,
+        "multi": true,
         "name": "pod",
         "options": [],
         "query": {
-          "query": "label_values(kube_pod_info{namespace=\"$namespace\", cluster=\"$cluster\"}, pod)",
+          "query": "query_result(kube_pod_info{namespace=\"$namespace\", cluster=\"$cluster\"})",
           "refId": "Prometheus-pod-Variable-Query"
         },
         "refresh": 2,
-        "regex": "",
+        "regex": "/pod=\"([^\"]+)\"/",
         "sort": 1,
         "type": "query",
-        "allowCustomValue": false
+        "allowCustomValue": false,
+        "allValue": ".*"
       },
       {
         "current": {
