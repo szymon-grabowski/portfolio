@@ -1,6 +1,6 @@
 /**
- * Command Center content. Observability cards open the public, read-only Grafana and Argo CD.
- * `href: '#'` marks cards without a target yet (Architecture, CV).
+ * Command Center content. Observability cards open the public, read-only Grafana and Argo CD;
+ * profile cards open the site's own screens 2.1 and 2.2.
  */
 import type { IconName } from '../components/ModuleIcon.astro';
 
@@ -44,9 +44,8 @@ export const MODULE_GROUPS: ModuleGroup[] = [
   {
     label: 'PORTFOLIO / PROFILE',
     modules: [
-      { title: 'Architecture', status: 'up to date', description: 'System design\nand diagrams', icon: 'architecture', href: '#' },
-      { title: 'CV', status: 'available', description: 'Experience\nand skills', icon: 'document', href: '#' },
-      { title: 'LinkedIn', status: 'online', description: "Let's connect", icon: 'linkedin', href: 'https://www.linkedin.com/in/szymon-grabowskii/', external: true },
+      { title: 'About me', status: 'open 2.1', description: 'CV, LinkedIn,\ncertifications, contact', icon: 'person', href: '/about/' },
+      { title: 'About this project', status: 'open 2.2', description: 'Goal, architecture\nand stack', icon: 'architecture', href: '/project/' },
     ],
   },
 ];

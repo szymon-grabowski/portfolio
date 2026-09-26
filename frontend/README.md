@@ -159,19 +159,25 @@ sudo nginx -t && sudo systemctl reload nginx
 src/
 ├── pages/
 │   ├── index.astro            start screen (boot sequence)
-│   └── command-center.astro   /command-center/, opened by START
+│   ├── command-center.astro   /command-center/, opened by START
+│   ├── about.astro            /about/ (2.1 About me)
+│   └── project.astro          /project/ (2.2 About this project)
 ├── layouts/
 │   ├── BaseLayout.astro       <head>, font preload, theme CSS, pre-paint script, client entry
 │   └── ScreenLayout.astro     monitor + header + content + optional footer (shared by pages)
 ├── components/
-│   ├── Monitor.astro          casing, neck, foot, guide lines
+│   ├── Monitor.astro          casing, neck, foot
 │   ├── Header.astro           name, tags, version, status LED
 │   ├── ThemePicker.astro      THEME button + panel (rendered from data/themes.ts)
 │   ├── BootSequence.astro     boot log, prompt, map, verbs
 │   ├── StartButton.astro
 │   ├── WorldMap.astro         dotted map, generated at build time
+│   ├── ScreenBar.astro        "cd ..", screen number and title (Command Center, 2.1, 2.2)
 │   ├── CommandCenter.astro    title bar + module groups
 │   ├── ModuleCard.astro       one card
+│   ├── AboutMe.astro          2.1: profile, CV, links, certifications, projects
+│   ├── AboutProject.astro     2.2: goal, stack, architecture flow, links
+│   ├── LinkCard.astro         compact link row used on 2.1 and 2.2
 │   ├── ModuleIcon.astro       brand marks + line icons, all in the theme color
 │   └── Footer.astro
 ├── styles/
@@ -186,7 +192,8 @@ src/
 │   ├── start-button.css
 │   ├── world-map.css
 │   ├── footer.css
-│   └── command-center.css
+│   ├── command-center.css
+│   └── subpage.css            2.1 and 2.2
 ├── scripts/
 │   ├── main.ts                entry: wires all modules together
 │   ├── boot-sequence.ts       progress animation, skip, replay
@@ -201,6 +208,8 @@ src/
     ├── themes.ts              all theme colors (single source of truth)
     ├── boot.ts                boot steps, timing budget, START command and target
     ├── modules.ts             Command Center groups and cards (links go here)
+    ├── profile.ts             2.1 content: bio, links, certifications, projects
+    ├── project.ts             2.2 content: goal, architecture, stack, links
     ├── brand-icons.ts         official logos as single-color paths (sources inside)
     └── world-map.ts           map bitmap
 ```
@@ -210,5 +219,8 @@ src/
 - **Text on the page:** `src/data/site.ts`
 - **Boot speed:** `BOOT_TIMING` in `src/data/boot.ts`
 - **New theme:** one entry in `src/data/themes.ts`; CSS and the picker update automatically
-- **Command Center cards and links:** `src/data/modules.ts` (Architecture and CV still use `href: '#'`)
+- **Command Center cards and links:** `src/data/modules.ts`
+- **About me (2.1):** `src/data/profile.ts`; certifications and projects appear once the lists have entries
+- **CV:** put the PDF at `public/cv.pdf`; the card links to it automatically and nginx serves it inline (opens in the browser)
+- **About this project (2.2):** `src/data/project.ts`
 - **Colors in new components:** only theme variables (`--accent`, `--accent-text`, `--muted`, `--ok`, `--line`, `--card`…), never hex values

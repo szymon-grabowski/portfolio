@@ -9,6 +9,8 @@ import { BRAND_ICONS, type BrandIconName } from '../data/brand-icons';
 const LINE_ICONS = {
   architecture: '<rect x="13" y="3" width="10" height="7" rx="1"/><rect x="3" y="24" width="10" height="7" rx="1"/><rect x="23" y="24" width="10" height="7" rx="1"/><path d="M18 10v7M8 24v-7h20v7"/>',
   document: '<path d="M9 3h13l7 7v21H9z"/><path d="M22 3v7h7M13 16h11M13 21h11M13 26h7"/>',
+  person: '<circle cx="18" cy="11" r="6"/><path d="M6 31c0-6.6 5.4-11 12-11s12 4.4 12 11"/>',
+  mail: '<rect x="4" y="7" width="28" height="20" rx="2"/><path d="M4 9l14 10 14-10"/>',
 } as const;
 
 export type IconName = BrandIconName | keyof typeof LINE_ICONS;

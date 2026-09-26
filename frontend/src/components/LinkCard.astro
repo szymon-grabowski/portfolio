@@ -1,0 +1,35 @@
+---
+/** Compact link row for screens 2.1 and 2.2: icon, title, one-line description. No href = disabled. */
+import ModuleIcon, { type IconName } from './ModuleIcon.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  icon: IconName;
+  href?: string;
+  /** Opens in a new tab. */
+  external?: boolean;
+}
+const { title, description, icon, href, external } = Astro.props;
+---
+{href ? (
+  <a class="link-card" href={href} {...external ? { target: '_blank', rel: 'noopener' } : {}}>
+    <ModuleIcon name={icon} />
+    <span class="link-card__text">
+      <span class="link-card__title">{title}</span>
+      <span class="link-card__desc">{description}</span>
+    </span>
+    {external && (
+      <svg class="link-card__ext" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor"
+           stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M4.5 1.5h6v6M10.5 1.5L2 10" /></svg>
+    )}
+  </a>
+) : (
+  <div class="link-card link-card--disabled" aria-disabled="true">
+    <ModuleIcon name={icon} />
+    <span class="link-card__text">
+      <span class="link-card__title">{title}</span>
+      <span class="link-card__desc">{description}</span>
+    </span>
+  </div>
+)}

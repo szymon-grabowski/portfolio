@@ -1,0 +1,46 @@
+---
+import { ARCHITECTURE, PRINCIPLES, PROJECT_GOAL, PROJECT_LINKS, STACK } from '../data/project';
+import LinkCard from './LinkCard.astro';
+import ScreenBar from './ScreenBar.astro';
+---
+<section class="cc sub" aria-labelledby="project-title">
+  <ScreenBar num="2.2" title="ABOUT THIS PROJECT" titleId="project-title" back="/command-center/" />
+
+  <div class="sub-grid sub-grid--project">
+    <section class="cc-group sub-panel" aria-label="GOAL">
+      <h2 class="cc-group__label">GOAL</h2>
+      {PROJECT_GOAL.map((line) => <p class="sub-text">{line}</p>)}
+      <ul class="bullets">
+        {PRINCIPLES.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <section class="cc-group sub-panel" aria-label="STACK">
+      <h2 class="cc-group__label">STACK</h2>
+      <ul class="chips">
+        {STACK.map((item) => <li>{item}</li>)}
+      </ul>
+    </section>
+
+    <section class="cc-group sub-panel sub-panel--wide" aria-label="ARCHITECTURE">
+      <h2 class="cc-group__label">ARCHITECTURE</h2>
+      <div class="lanes">
+        {ARCHITECTURE.map((lane) => (
+          <div class="lane">
+            <span class="lane__label">{lane.label}</span>
+            <ol class="lane__steps">
+              {lane.steps.map((step) => <li>{step}</li>)}
+            </ol>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="cc-group sub-panel sub-panel--wide" aria-label="EXPLORE">
+      <h2 class="cc-group__label">EXPLORE</h2>
+      <div class="link-row">
+        {PROJECT_LINKS.map((link) => <LinkCard {...link} external />)}
+      </div>
+    </section>
+  </div>
+</section>
