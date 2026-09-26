@@ -2,6 +2,7 @@
 # kubernetes-pods.json: grafana.com 15760 rev 41 - taller Information row,
 # empty-state texts instead of "No data", Priority Class shows "none" for pods without a class,
 # single-select pod variable (Information stats match one pod), Created by = author, Pod age instead of Pod IP.
+# No custom variable values (stale pod names from URLs), no terraform/oncall annotation toggles.
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: monitoring
