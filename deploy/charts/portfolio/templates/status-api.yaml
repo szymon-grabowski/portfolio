@@ -28,5 +28,10 @@ data:
       proxy_set_header Authorization "";
       proxy_connect_timeout 2s;
       proxy_read_timeout 5s;
+      # Prometheus answers CORS for any origin (--web.cors.origin=.*); only the headers above may reach the browser.
+      proxy_hide_header Access-Control-Allow-Origin;
+      proxy_hide_header Access-Control-Allow-Methods;
+      proxy_hide_header Access-Control-Allow-Headers;
+      proxy_hide_header Access-Control-Expose-Headers;
     }
 {{- end }}

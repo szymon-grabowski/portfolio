@@ -1,5 +1,6 @@
 import { MODULE_GROUPS } from '../../src/data/modules';
 import { STATUS_TEXT } from '../../src/data/status';
+import { THEME_IDS, THEME_STORAGE_KEY } from '../../src/data/themes';
 import { ALL_CHECKS, expect, mockStatus, test } from './fixtures';
 
 const live = MODULE_GROUPS.flatMap((g) => g.modules).filter((m) => m.check);
@@ -39,3 +40,22 @@ test('no data is shown as unknown, never as OK', async ({ page }) => {
   for (const m of live) await expect(card(page, m.title)).toHaveAttribute('data-state', 'unknown');
   await expect(page.locator('[data-status-summary]')).toContainText(STATUS_TEXT.unavailable);
 });
+
+// Fixed status colours (themes.css): the same green / red / grey in every theme.
+const COLORS = { ok: 'rgb(74, 222, 128)', fail: 'rgb(248, 113, 113)', unknown: 'rgb(156, 163, 175)' };
+
+for (const theme of THEME_IDS) {
+  test(`status colours do not depend on the theme: ${theme}`, async ({ page }) => {
+    await page.addInitScript(([key, id]) => localStorage.setItem(key, id), [THEME_STORAGE_KEY, theme]);
+    await page.unrouteAll();
+    // cicd failing, loki without data, the rest OK
+    await mockStatus(page, Object.fromEntries(ALL_CHECKS.filter((c) => c !== 'loki').map((c) => [c, c !== 'cicd'])));
+    await page.goto('/command-center/');
+    await expect(page.locator('html')).toHaveAttribute('data-theme', theme);
+    const led = (check: string) => page.locator(`[data-check="${check}"] .module-card__led`);
+    await expect(led('grafana')).toHaveCSS('background-color', COLORS.ok);
+    await expect(led('cicd')).toHaveCSS('background-color', COLORS.fail);
+    await expect(led('loki')).toHaveCSS('background-color', COLORS.unknown);
+    await expect(page.locator('[data-status-summary] .bar__led')).toHaveCSS('background-color', COLORS.fail);
+  });
+}
