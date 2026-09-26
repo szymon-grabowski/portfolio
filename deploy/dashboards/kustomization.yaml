@@ -4,12 +4,18 @@
 # single-select pod variable (Information stats match one pod), Created by = author, Pod age instead of Pod IP.
 # Pod variable: live pods only (query_result), All by default, Information stats per pod.
 # No custom variable values (stale pod names from URLs), no terraform/oncall annotation toggles.
+# node-exporter-full.json: grafana.com 1860 rev 45 - without panels that are always empty on a VPS
+# (Hardware Misc, Systemd, CPU Frequency Scaling, IRQ Detail, ARP Entries, UDP Queue).
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 namespace: monitoring
 generatorOptions:
   disableNameSuffixHash: true   # Grafana references the ConfigMap by name
+  annotations:
+    # client-side apply keeps a copy in last-applied-configuration, limited to 256KiB
+    argocd.argoproj.io/sync-options: ServerSideApply=true
 configMapGenerator:
   - name: grafana-dashboards-custom
     files:
       - kubernetes-pods.json
+      - node-exporter-full.json
