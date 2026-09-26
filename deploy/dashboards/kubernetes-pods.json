@@ -38,7 +38,10 @@
       "id": 43,
       "panels": [],
       "title": "Information",
-      "type": "row"
+      "type": "row",
+      "fieldConfig": {
+        "defaults": {}
+      }
     },
     {
       "type": "text",
@@ -53,6 +56,9 @@
       "options": {
         "mode": "markdown",
         "content": "## Grabowski Szymon"
+      },
+      "fieldConfig": {
+        "defaults": {}
       }
     },
     {
@@ -60,7 +66,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Panel only works when a single pod is selected.",
+      "description": "Node running the selected pods, with how many of them run there.",
       "fieldConfig": {
         "defaults": {
           "links": [
@@ -79,7 +85,8 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "suffix: pod(s)",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -98,13 +105,13 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "name",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "pluginVersion": "12.2.1",
@@ -116,11 +123,12 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_info{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}",
+          "expr": "count by (node) (kube_pod_info{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"})",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{ node }}",
-          "refId": "A"
+          "legendFormat": "{{node}}",
+          "refId": "A",
+          "range": false
         }
       ],
       "title": "Running on",
@@ -131,7 +139,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Time since the pod started.",
+      "description": "Time since the youngest and the oldest selected pod started.",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -164,7 +172,7 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
@@ -182,11 +190,26 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "time() - kube_pod_start_time{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}",
+          "expr": "min(time() - kube_pod_start_time{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"})",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{pod}}",
-          "refId": "A"
+          "legendFormat": "youngest",
+          "refId": "A",
+          "range": false
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "code",
+          "exemplar": false,
+          "expr": "max(time() - kube_pod_start_time{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"})",
+          "instant": true,
+          "interval": "",
+          "legendFormat": "oldest",
+          "refId": "B",
+          "range": false
         }
       ],
       "title": "Pod age",
@@ -210,8 +233,9 @@
               }
             ]
           },
-          "unit": "none",
-          "noValue": "none"
+          "unit": "suffix: pod(s)",
+          "noValue": "none",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -230,13 +254,13 @@
         "percentChangeColorMode": "standard",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "name",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "pluginVersion": "12.2.1",
@@ -248,11 +272,11 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_replace(kube_pod_info{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}, \"priority_class\", \"none\", \"priority_class\", \"\")",
+          "expr": "count by (priority_class) (label_replace(kube_pod_info{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}, \"priority_class\", \"none\", \"priority_class\", \"\"))",
           "format": "time_series",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{ priority_class }}",
+          "legendFormat": "{{priority_class}}",
           "range": false,
           "refId": "A"
         }
@@ -281,9 +305,25 @@
               }
             ]
           },
-          "unit": "none"
+          "unit": "suffix: pod(s)",
+          "decimals": 0
         },
         "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Guaranteed"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "green",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
           {
             "matcher": {
               "id": "byName",
@@ -293,7 +333,7 @@
               {
                 "id": "color",
                 "value": {
-                  "fixedColor": "red",
+                  "fixedColor": "blue",
                   "mode": "fixed"
                 }
               }
@@ -330,12 +370,14 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "name",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "pluginVersion": "12.2.1",
@@ -347,11 +389,12 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_status_qos_class{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"} > 0",
+          "expr": "count by (qos_class) (kube_pod_status_qos_class{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"} > 0)",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{ qos_class }}",
-          "refId": "A"
+          "legendFormat": "{{qos_class}}",
+          "refId": "A",
+          "range": false
         }
       ],
       "title": "QOS Class",
@@ -379,8 +422,9 @@
               }
             ]
           },
-          "unit": "none",
-          "noValue": "never terminated"
+          "unit": "suffix: container(s)",
+          "noValue": "never terminated",
+          "decimals": 0
         },
         "overrides": []
       },
@@ -398,12 +442,14 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "name",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "pluginVersion": "12.2.1",
@@ -415,11 +461,12 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_container_status_last_terminated_reason{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}",
+          "expr": "count by (reason) (kube_pod_container_status_last_terminated_reason{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"} > 0)",
           "instant": true,
           "interval": "",
-          "legendFormat": "{{ reason }}",
-          "refId": "A"
+          "legendFormat": "{{reason}}",
+          "refId": "A",
+          "range": false
         }
       ],
       "title": "Last Terminated Reason",
@@ -430,7 +477,7 @@
         "type": "prometheus",
         "uid": "${datasource}"
       },
-      "description": "Panel only works when a single pod is selected.",
+      "description": "Highest exit code of the last termination across the selected containers (0 = clean exit).",
       "fieldConfig": {
         "defaults": {
           "mappings": [],
@@ -470,9 +517,11 @@
         "orientation": "auto",
         "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "calcs": [],
+          "calcs": [
+            "lastNotNull"
+          ],
           "fields": "",
-          "values": true
+          "values": false
         },
         "showPercentChange": false,
         "textMode": "value",
@@ -487,10 +536,10 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "kube_pod_container_status_last_terminated_exitcode{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"}",
+          "expr": "max(kube_pod_container_status_last_terminated_exitcode{namespace=\"$namespace\", pod=~\"$pod\", cluster=\"$cluster\"})",
           "instant": true,
           "interval": "",
-          "legendFormat": "__auto",
+          "legendFormat": "highest",
           "range": false,
           "refId": "A"
         }
@@ -509,7 +558,10 @@
       "id": 47,
       "panels": [],
       "title": "Resources",
-      "type": "row"
+      "type": "row",
+      "fieldConfig": {
+        "defaults": {}
+      }
     },
     {
       "datasource": {
@@ -1706,7 +1758,10 @@
       "id": 62,
       "panels": [],
       "title": "Kubernetes",
-      "type": "row"
+      "type": "row",
+      "fieldConfig": {
+        "defaults": {}
+      }
     },
     {
       "datasource": {
@@ -2250,7 +2305,10 @@
       "id": 45,
       "panels": [],
       "title": "Network",
-      "type": "row"
+      "type": "row",
+      "fieldConfig": {
+        "defaults": {}
+      }
     },
     {
       "datasource": {

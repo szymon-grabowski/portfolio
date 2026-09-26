@@ -139,8 +139,8 @@ prometheus:
     retention: 7d
     retentionSize: 4GB
     resources:
-      requests: { cpu: 50m, memory: 320Mi }  # 24h peak 394Mi before the kubelet series cut
-      limits: { memory: 512Mi }
+      requests: { cpu: 50m, memory: 384Mi }  # 24h peak 394Mi before the kubelet series cut, ~180Mi after
+      limits: { memory: 1Gi }                # headroom for heavy queries from the public Grafana
     serviceMonitorSelectorNilUsesHelmValues: false
     podMonitorSelectorNilUsesHelmValues: false
     probeSelectorNilUsesHelmValues: false
