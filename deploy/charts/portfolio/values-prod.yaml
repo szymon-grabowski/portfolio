@@ -4,3 +4,4 @@ ingress:
   hosts:
     - next.szymongrabowski.dev
   entrypoint: web
+siteVersion: 2.2.2
