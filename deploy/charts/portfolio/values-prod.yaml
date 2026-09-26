@@ -1,7 +1,6 @@
 image:
-  tag: "9836991c3e9f87b166809e3adefbb4ae8d296dbf"
+  tag: "cb351beea59f28064ca9cf4386a2a71d4a3fc9c8"
 ingress:
   hosts:
     - next.szymongrabowski.dev
   entrypoint: web
-siteVersion: 2.2.2
