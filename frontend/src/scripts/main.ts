@@ -1,5 +1,6 @@
 /** Client entry point: wires up every interactive module. */
 import { initBootSequence } from './boot-sequence';
+import { initCopyButtons } from './copy-button';
 import { initMonitorFit } from './monitor-fit';
 import { initStartButton } from './start-button';
 import { initStatus } from './status';
@@ -11,6 +12,7 @@ initMonitorFit();
 const boot = initBootSequence(); // null on pages without the boot screen
 initStartButton();
 initStatus();
+initCopyButtons();
 initThemePicker({
   onReplay: () => {
     if (boot) return boot.replay();

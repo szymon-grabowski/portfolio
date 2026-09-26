@@ -1,4 +1,4 @@
-import { CERTIFICATIONS, PROFILE, PROFILE_LINKS, PROJECTS } from '../../src/data/profile';
+import { CERTIFICATIONS, EXPERIENCE, PROFILE, PROFILE_LINKS, PROJECTS, SKILLS } from '../../src/data/profile';
 import { PROJECT_LINKS } from '../../src/data/project';
 import { expect, test } from './fixtures';
 
@@ -18,6 +18,17 @@ test.describe('2.1 about me', () => {
     await expect(page.getByRole('link', { name: /Email/ })).toHaveAttribute('href', `mailto:${PROFILE.email}`);
   });
 
+  test('experience, skills and education from profile.ts are all listed', async ({ page }) => {
+    const jobs = page.locator('.job');
+    await expect(jobs).toHaveCount(EXPERIENCE.length);
+    for (const [i, job] of EXPERIENCE.entries()) {
+      await expect(jobs.nth(i).locator('.job__title')).toContainText(job.role);
+      await expect(jobs.nth(i).locator('.job__period')).toHaveText(job.period);
+    }
+    await expect(page.locator('.skills__row')).toHaveCount(SKILLS.length);
+    await expect(page.getByRole('heading', { name: 'EDUCATION / LANGUAGES' })).toBeAttached();
+  });
+
   test('CV is a disabled card until public/cv.pdf exists, then opens in a new tab', async ({ page }) => {
     const cv = page.locator('.link-card', { hasText: 'CV' });
     const href = await cv.getAttribute('href');
@@ -26,11 +37,24 @@ test.describe('2.1 about me', () => {
     } else {
       await expect(cv).toHaveAttribute('href', '/cv.pdf');
       await expect(cv).toHaveAttribute('target', '_blank');
+      const download = page.waitForEvent('download');
+      await page.getByRole('link', { name: 'Download CV' }).click();
+      expect((await download).suggestedFilename()).toBe('Szymon-Grabowski-CV.pdf');
     }
   });
 
-  test('empty sections stay hidden', async ({ page }) => {
+  test('copy button puts the email address on the clipboard', async ({ page, context, browserName }) => {
+    test.skip(browserName !== 'chromium', 'clipboard permissions are Chromium-only in Playwright');
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const button = page.getByRole('button', { name: 'Copy email address' });
+    await button.click();
+    await expect(button).toHaveClass(/is-copied/);
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(PROFILE.email);
+  });
+
+  test('certifications and other projects follow profile.ts', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'CERTIFICATIONS' })).toHaveCount(CERTIFICATIONS.length ? 1 : 0);
+    for (const cert of CERTIFICATIONS) await expect(page.getByText(cert.name)).toBeVisible();
     await expect(page.getByRole('heading', { name: 'OTHER PROJECTS' })).toHaveCount(PROJECTS.length ? 1 : 0);
   });
 

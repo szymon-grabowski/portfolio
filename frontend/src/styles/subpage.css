@@ -5,7 +5,15 @@
   gap: 20px 12px;
   padding-top: 8px;
 }
-.sub-grid--about { grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); align-content: start; }
+.sub-grid--about { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); align-content: start; }
+/* More content than one monitor screen: scroll inside it (labels need the top padding). */
+body.framed .sub-grid--scroll {
+  overflow-y: auto;
+  padding: 8px 6px 4px 0;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dim) transparent;
+}
+.sub-stack { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
 .sub-grid--project { grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); align-content: start; }
 
 .sub-panel { display: flex; flex-direction: column; gap: 10px; }
@@ -15,6 +23,26 @@
 .profile__name { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; }
 .profile__role { margin: -4px 0 4px; font-size: 13px; color: var(--accent-text); letter-spacing: 0.06em; text-transform: uppercase; }
 .sub-text { margin: 0; font-size: 12px; line-height: 1.6; color: var(--muted); }
+.profile__location { margin: -6px 0 2px; font-size: 11px; color: var(--muted); }
+
+/* ---------- experience ---------- */
+.timeline { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 14px; }
+.job { position: relative; padding-left: 16px; border-left: 1px solid var(--line); }
+.job::before {
+  content: ''; position: absolute; left: -4px; top: 5px;
+  width: 7px; height: 7px; border-radius: 50%; background: var(--accent-text);
+}
+.job__head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.job__title { margin: 0; font-size: 13px; font-weight: 700; }
+.job__company { font-weight: 400; color: var(--accent-text); }
+.job__period { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.job__context { margin: 2px 0 6px; font-size: 11px; color: var(--muted); font-style: italic; }
+
+/* ---------- skills ---------- */
+.skills { margin: 0; display: flex; flex-direction: column; gap: 8px; font-size: 11px; line-height: 1.5; }
+.skills__row { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 10px; }
+.skills dt { color: var(--accent-text); }
+.skills dd { margin: 0; color: var(--text); }
 
 .chips { margin: 4px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; }
 .chips li {
@@ -59,6 +87,28 @@ a.link-card:hover { background: var(--card-hover); border-color: var(--accent); 
 .link-card__ext { flex: none; margin-left: auto; color: var(--accent-text); }
 .link-card--disabled { opacity: 0.55; }
 
+/* Link card with an icon button on the right (CV + download, email + copy). */
+.link-split { display: flex; gap: 8px; }
+.link-split .link-card { flex: 1; }
+.icon-btn {
+  flex: none;
+  display: grid; place-items: center;
+  width: 48px;
+  color: var(--accent-text);
+  background: var(--card);
+  border: 1px solid var(--dim);
+  border-radius: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.icon-btn:hover { background: var(--card-hover); border-color: var(--accent); color: var(--text); }
+.copy-btn__icon { grid-area: 1 / 1; transition: opacity 0.15s ease; }
+.copy-btn__icon--done { opacity: 0; color: var(--ok); }
+.copy-btn.is-copied { border-color: var(--ok); }
+.copy-btn.is-copied .copy-btn__icon--copy { opacity: 0; }
+.copy-btn.is-copied .copy-btn__icon--done { opacity: 1; }
+
 /* ---------- architecture flow ---------- */
 .lanes { display: flex; flex-direction: column; gap: 10px; }
 .lane { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; gap: 12px; }
@@ -72,4 +122,5 @@ body:not(.framed) .sub-grid { flex: none; }
 @media (max-width: 900px) {
   body:not(.framed) .sub-grid { grid-template-columns: minmax(0, 1fr); }
   body:not(.framed) .lane { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  body:not(.framed) .skills__row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 }

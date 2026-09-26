@@ -30,13 +30,10 @@ export interface ModuleGroup {
 
 export const MODULE_GROUPS: ModuleGroup[] = [
   {
-    label: 'GITOPS / BUILD / DEPLOYMENT',
-    wide: true,
+    label: 'PORTFOLIO / PROFILE',
     modules: [
-      { title: 'Repository', status: 'online', failStatus: 'unreachable', check: 'repository', description: 'Source code\nand configuration', icon: 'git', href: 'https://github.com/szymon-grabowski/portfolio', external: true },
-      { title: 'CI/CD', status: 'pipeline green', failStatus: 'pipeline failed', check: 'cicd', description: 'Build, test\nand deploy', icon: 'githubactions', href: 'https://github.com/szymon-grabowski/portfolio/actions', external: true },
-      { title: 'Argo CD', status: 'synced, healthy', failStatus: 'out of sync', check: 'argocd', description: 'GitOps\ndeployments', icon: 'argo', href: 'https://argocd.szymongrabowski.dev', external: true },
-      { title: 'Kubernetes', status: 'healthy', failStatus: 'degraded', check: 'kubernetes', description: 'Cluster status\nand resources', icon: 'kubernetes', href: 'https://grafana.szymongrabowski.dev/d/k8s_views_pods', external: true },
+      { title: 'About me', status: 'open 2.1', description: 'CV, LinkedIn,\ncertifications, contact', icon: 'person', href: '/about/' },
+      { title: 'About this project', status: 'open 2.2', description: 'Goal, architecture\nand stack', icon: 'architecture', href: '/project/' },
     ],
   },
   {
@@ -48,10 +45,13 @@ export const MODULE_GROUPS: ModuleGroup[] = [
     ],
   },
   {
-    label: 'PORTFOLIO / PROFILE',
+    label: 'GITOPS / BUILD / DEPLOYMENT',
+    wide: true,
     modules: [
-      { title: 'About me', status: 'open 2.1', description: 'CV, LinkedIn,\ncertifications, contact', icon: 'person', href: '/about/' },
-      { title: 'About this project', status: 'open 2.2', description: 'Goal, architecture\nand stack', icon: 'architecture', href: '/project/' },
+      { title: 'Repository', status: 'online', failStatus: 'unreachable', check: 'repository', description: 'Source code\nand configuration', icon: 'git', href: 'https://github.com/szymon-grabowski/portfolio', external: true },
+      { title: 'CI/CD', status: 'pipeline green', failStatus: 'pipeline failed', check: 'cicd', description: 'Build, test\nand deploy', icon: 'githubactions', href: 'https://github.com/szymon-grabowski/portfolio/actions', external: true },
+      { title: 'Argo CD', status: 'synced, healthy', failStatus: 'out of sync', check: 'argocd', description: 'GitOps\ndeployments', icon: 'argo', href: 'https://argocd.szymongrabowski.dev', external: true },
+      { title: 'Kubernetes', status: 'healthy', failStatus: 'degraded', check: 'kubernetes', description: 'Cluster status\nand resources', icon: 'kubernetes', href: 'https://grafana.szymongrabowski.dev/d/k8s_views_pods', external: true },
     ],
   },
 ];
