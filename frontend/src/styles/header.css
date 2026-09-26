@@ -10,9 +10,9 @@
 .bar__tags, .bar__version { font-size: 10px; color: var(--accent-text); white-space: nowrap; }
 
 .bar__status { display: flex; align-items: center; gap: 8px; font-size: 11px; white-space: nowrap; }
-.bar__status { --led: var(--unknown); }
-.bar__status[data-state='ok'] { --led: var(--ok); }
-.bar__status[data-state='fail'] { --led: var(--bad); color: var(--bad); }
+.bar__status { --led: var(--status-unknown); }
+.bar__status[data-state='ok'] { --led: var(--status-ok); }
+.bar__status[data-state='fail'] { --led: var(--status-bad); color: var(--status-bad); }
 .bar__led {
   width: 9px; height: 9px; border-radius: 50%;
   background: var(--led);

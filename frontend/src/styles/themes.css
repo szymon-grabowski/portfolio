@@ -8,7 +8,9 @@ html {
   --line: color-mix(in srgb, var(--accent) 25%, transparent);
   --card: color-mix(in srgb, var(--accent) 3%, transparent);
   --card-hover: color-mix(in srgb, var(--accent) 8%, transparent);
-  /* Health states for live LEDs (scripts/status.ts): same in every theme. */
-  --bad: #f26d6d;
-  --unknown: var(--muted);
+  /* Health of live checks (scripts/status.ts): fixed, so green/red/grey mean the same in every theme.
+     Contrast on every theme background is at least 6.5:1. */
+  --status-ok: #4ade80;
+  --status-bad: #f87171;
+  --status-unknown: #9ca3af;
 }
