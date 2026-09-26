@@ -1,5 +1,5 @@
 import { CERTIFICATIONS, EXPERIENCE, PROFILE, PROFILE_LINKS, PROJECTS, SKILLS } from '../../src/data/profile';
-import { PROJECT_LINKS } from '../../src/data/project';
+import { PROJECT_LINKS, STACK, STACK_HINT } from '../../src/data/project';
 import { expect, test } from './fixtures';
 
 test.describe('2.1 about me', () => {
@@ -79,6 +79,23 @@ test.describe('2.2 about this project', () => {
       await expect(card).toHaveAttribute('href', link.href);
       await expect(card).toHaveAttribute('target', '_blank');
     }
+  });
+
+  test('stack: hover previews a role, a click pins it', async ({ page, isMobile }) => {
+    const detail = page.locator('[data-stack-detail]');
+    await expect(detail).toContainText(STACK_HINT);
+    const [first, second] = STACK;
+    if (!isMobile) {
+      await page.getByRole('button', { name: first.name, exact: true }).hover();
+      await expect(detail).toContainText(first.role);
+    }
+    const pinned = page.getByRole('button', { name: second.name, exact: true });
+    await pinned.click();
+    await expect(pinned).toHaveAttribute('aria-pressed', 'true');
+    await page.mouse.move(0, 0);
+    await page.locator('body').focus();
+    await expect(detail).toContainText(second.role);
+    await expect(page.locator('[data-stack] button[aria-pressed="true"]')).toHaveCount(1);
   });
 
   test('"cd .." returns to the Command Center', async ({ page }) => {

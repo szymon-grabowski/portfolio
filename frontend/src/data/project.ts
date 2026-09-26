@@ -29,10 +29,33 @@ export const PRINCIPLES = [
   'Rollback = git revert of the release commit',
 ];
 
-export const STACK = [
-  'Astro', 'TypeScript', 'nginx', 'Docker', 'GitHub Actions', 'Playwright', 'Lighthouse CI', 'Trivy',
-  'Helm', 'Argo CD', 'k3s', 'Traefik', 'Prometheus', 'Loki', 'Alloy', 'Grafana',
+export interface StackItem {
+  name: string;
+  /** What it does in this project (shown on hover, focus or tap). */
+  role: string;
+}
+
+export const STACK: StackItem[] = [
+  { name: 'Astro', role: 'Builds every page to static HTML at build time; nothing renders on a server at runtime.' },
+  { name: 'TypeScript', role: 'Typed page scripts: boot sequence, themes, live status LEDs. astro check runs in CI.' },
+  { name: 'nginx', role: 'Serves the static files with cache and security headers; in k3s also proxies /api/status to Prometheus.' },
+  { name: 'Docker', role: 'Packs nginx and the built site into one non-root image, published to GHCR.' },
+  { name: 'GitHub Actions', role: 'The pipeline: build, tests, Lighthouse, Helm checks, image, manual approval, release commit.' },
+  { name: 'Playwright', role: 'End-to-end tests in desktop Chrome, Firefox and a phone, with axe accessibility checks.' },
+  { name: 'Lighthouse CI', role: 'Blocks a release when accessibility, best practices or SEO scores drop.' },
+  { name: 'Trivy', role: 'Scans the container image for known vulnerabilities before it ships.' },
+  { name: 'Helm', role: 'Own charts for the site and the platform; values files for every vendor chart.' },
+  { name: 'Argo CD', role: 'GitOps: keeps the cluster identical to Git (app of apps, self-heal, prune).' },
+  { name: 'k3s', role: 'Single-node Kubernetes on the VPS: next.szymongrabowski.dev, Argo CD and monitoring.' },
+  { name: 'Traefik', role: 'Ingress controller of k3s: routes next.szymongrabowski.dev to the nginx pod.' },
+  { name: 'Prometheus', role: 'Metrics and uptime probes; recording rules behind the live LEDs, alert rules for downtime and certificates.' },
+  { name: 'Loki', role: 'Stores pod logs, including the deploy history from Argo CD and the site access log.' },
+  { name: 'Alloy', role: 'Collects pod logs, anonymises IP addresses and ships them to Loki.' },
+  { name: 'Grafana', role: 'Public, read-only dashboards for metrics and logs.' },
 ];
+
+/** Shown in the stack panel until a technology is picked. */
+export const STACK_HINT = 'Hover or tap a technology to see its job here.';
 
 export interface ProjectLink {
   title: string;
