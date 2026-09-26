@@ -40,8 +40,18 @@ test.describe('2.1 about me', () => {
     }
   });
 
-  test('empty sections stay hidden', async ({ page }) => {
+  test('copy button puts the email address on the clipboard', async ({ page, context, browserName }) => {
+    test.skip(browserName !== 'chromium', 'clipboard permissions are Chromium-only in Playwright');
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+    const button = page.getByRole('button', { name: 'Copy email address' });
+    await button.click();
+    await expect(button).toHaveClass(/is-copied/);
+    expect(await page.evaluate(() => navigator.clipboard.readText())).toBe(PROFILE.email);
+  });
+
+  test('certifications and other projects follow profile.ts', async ({ page }) => {
     await expect(page.getByRole('heading', { name: 'CERTIFICATIONS' })).toHaveCount(CERTIFICATIONS.length ? 1 : 0);
+    for (const cert of CERTIFICATIONS) await expect(page.getByText(cert.name)).toBeVisible();
     await expect(page.getByRole('heading', { name: 'OTHER PROJECTS' })).toHaveCount(PROJECTS.length ? 1 : 0);
   });
 

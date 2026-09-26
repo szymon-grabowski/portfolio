@@ -13,12 +13,14 @@ export interface ProfileLink {
   icon: IconName;
   href: string;
   external?: boolean;
+  /** Text copied by a copy button next to the card (e.g. the email address). */
+  copy?: string;
 }
 
 export interface Certification {
   name: string;
   issuer: string;
-  /** Year or "2026-05"; shown as is. */
+  /** Year, "05.2026" or "in progress"; shown as is. */
   date: string;
   /** Verification page (Credly, vendor site). */
   href?: string;
@@ -137,9 +139,11 @@ export const LANGUAGES = ['Polish: native', 'English: technical documentation an
 export const PROFILE_LINKS: ProfileLink[] = [
   { title: 'LinkedIn', description: 'Experience and network', icon: 'linkedin', href: 'https://www.linkedin.com/in/szymon-grabowskii/', external: true },
   { title: 'GitHub', description: 'Code and other projects', icon: 'github', href: 'https://github.com/szymon-grabowski', external: true },
-  { title: 'Email', description: PROFILE.email, icon: 'mail', href: `mailto:${PROFILE.email}` },
+  { title: 'Email', description: PROFILE.email, icon: 'mail', href: `mailto:${PROFILE.email}`, copy: PROFILE.email },
 ];
 
-export const CERTIFICATIONS: Certification[] = [];
+export const CERTIFICATIONS: Certification[] = [
+  { name: 'AWS Certified Solutions Architect – Associate', issuer: 'Amazon Web Services', date: 'in progress' },
+];
 
 export const PROJECTS: Project[] = [];

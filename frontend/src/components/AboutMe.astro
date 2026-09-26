@@ -4,6 +4,7 @@ import { join } from 'node:path';
 import {
   CERTIFICATIONS, CV_PATH, EDUCATION, EXPERIENCE, LANGUAGES, PROFILE, PROFILE_LINKS, PROJECTS, SKILLS,
 } from '../data/profile';
+import CopyButton from './CopyButton.astro';
 import LinkCard from './LinkCard.astro';
 import ScreenBar from './ScreenBar.astro';
 
@@ -25,15 +26,38 @@ const hasCv = existsSync(join(process.cwd(), 'public', CV_PATH));
       </ul>
     </section>
 
-    <section class="cc-group sub-panel" aria-label="CV / LINKS / CONTACT">
-      <h2 class="cc-group__label">CV / LINKS / CONTACT</h2>
-      <div class="link-list">
-        <LinkCard title="CV" icon="document" external
-                  description={hasCv ? 'PDF, opens in a new tab' : 'Coming soon'}
-                  href={hasCv ? CV_PATH : undefined} />
-        {PROFILE_LINKS.map((link) => <LinkCard {...link} />)}
-      </div>
-    </section>
+    <div class="sub-stack">
+      <section class="cc-group sub-panel" aria-label="CV / LINKS / CONTACT">
+        <h2 class="cc-group__label">CV / LINKS / CONTACT</h2>
+        <div class="link-list">
+          <LinkCard title="CV" icon="document" external
+                    description={hasCv ? 'PDF, opens in a new tab' : 'Coming soon'}
+                    href={hasCv ? CV_PATH : undefined} />
+          {PROFILE_LINKS.map(({ copy, ...link }) => copy ? (
+            <div class="link-split">
+              <LinkCard {...link} />
+              <CopyButton text={copy} label={`Copy ${link.title.toLowerCase()} address`} />
+            </div>
+          ) : <LinkCard {...link} />)}
+        </div>
+      </section>
+
+      {CERTIFICATIONS.length > 0 && (
+        <section class="cc-group sub-panel" aria-label="CERTIFICATIONS">
+          <h2 class="cc-group__label">CERTIFICATIONS</h2>
+          <ul class="entries">
+            {CERTIFICATIONS.map((cert) => (
+              <li>
+                {cert.href
+                  ? <a href={cert.href} target="_blank" rel="noopener">{cert.name}</a>
+                  : <span>{cert.name}</span>}
+                <span class="entries__meta">{cert.issuer} · {cert.date}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+    </div>
 
     <section class="cc-group sub-panel sub-panel--experience" aria-label="EXPERIENCE">
       <h2 class="cc-group__label">EXPERIENCE</h2>
@@ -76,22 +100,6 @@ const hasCv = existsSync(join(process.cwd(), 'public', CV_PATH));
           {LANGUAGES.map((lang) => <li><span class="entries__meta">{lang}</span></li>)}
         </ul>
       </section>
-
-      {CERTIFICATIONS.length > 0 && (
-        <section class="cc-group sub-panel" aria-label="CERTIFICATIONS">
-          <h2 class="cc-group__label">CERTIFICATIONS</h2>
-          <ul class="entries">
-            {CERTIFICATIONS.map((cert) => (
-              <li>
-                {cert.href
-                  ? <a href={cert.href} target="_blank" rel="noopener">{cert.name}</a>
-                  : <span>{cert.name}</span>}
-                <span class="entries__meta">{cert.issuer} · {cert.date}</span>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
 
       {PROJECTS.length > 0 && (
         <section class="cc-group sub-panel" aria-label="OTHER PROJECTS">

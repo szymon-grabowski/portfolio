@@ -87,6 +87,27 @@ a.link-card:hover { background: var(--card-hover); border-color: var(--accent); 
 .link-card__ext { flex: none; margin-left: auto; color: var(--accent-text); }
 .link-card--disabled { opacity: 0.55; }
 
+/* Link card with an icon button on the right (email + copy). */
+.link-split { display: flex; gap: 8px; }
+.link-split .link-card { flex: 1; }
+.copy-btn {
+  flex: none;
+  display: grid; place-items: center;
+  width: 48px;
+  color: var(--accent-text);
+  background: var(--card);
+  border: 1px solid var(--dim);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.copy-btn:hover { background: var(--card-hover); border-color: var(--accent); color: var(--text); }
+.copy-btn__icon { grid-area: 1 / 1; transition: opacity 0.15s ease; }
+.copy-btn__icon--done { opacity: 0; color: var(--ok); }
+.copy-btn.is-copied { border-color: var(--ok); }
+.copy-btn.is-copied .copy-btn__icon--copy { opacity: 0; }
+.copy-btn.is-copied .copy-btn__icon--done { opacity: 1; }
+
 /* ---------- architecture flow ---------- */
 .lanes { display: flex; flex-direction: column; gap: 10px; }
 .lane { display: grid; grid-template-columns: 110px minmax(0, 1fr); align-items: center; gap: 12px; }
