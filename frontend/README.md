@@ -198,6 +198,7 @@ src/
 │   ├── main.ts                entry: wires all modules together
 │   ├── boot-sequence.ts       progress animation, skip, replay
 │   ├── start-button.ts        types the command, then opens Command Center
+│   ├── status.ts              fetches /api/status, sets the card LEDs and the header summary
 │   ├── theme.ts               apply / persist theme
 │   ├── theme-picker.ts        panel open/close, radio handling
 │   ├── monitor-fit.ts         scales the monitor or drops the frame
@@ -207,7 +208,8 @@ src/
     ├── site.ts                all visible copy
     ├── themes.ts              all theme colors (single source of truth)
     ├── boot.ts                boot steps, timing budget, START command and target
-    ├── modules.ts             Command Center groups and cards (links go here)
+    ├── modules.ts             Command Center groups and cards (links, live checks)
+    ├── status.ts              live status: endpoint, check names, header texts
     ├── profile.ts             2.1 content: bio, links, certifications, projects
     ├── project.ts             2.2 content: goal, architecture, stack, links
     ├── brand-icons.ts         official logos as single-color paths (sources inside)
@@ -220,6 +222,9 @@ src/
 - **Boot speed:** `BOOT_TIMING` in `src/data/boot.ts`
 - **New theme:** one entry in `src/data/themes.ts`; CSS and the picker update automatically
 - **Command Center cards and links:** `src/data/modules.ts`
+- **Live status LEDs:** a card with `check` follows the `site_status{check=…}` series from Prometheus
+  (recording rules in `deploy/values/kube-prometheus-stack.yaml`, probes in `deploy/values/blackbox-exporter.yaml`),
+  read through `/api/status` (`deploy/charts/portfolio`). Missing data shows grey "no data", never green.
 - **About me (2.1):** `src/data/profile.ts`; certifications and projects appear once the lists have entries
 - **CV:** put the PDF at `public/cv.pdf`; the card links to it automatically and nginx serves it inline (opens in the browser)
 - **About this project (2.2):** `src/data/project.ts`

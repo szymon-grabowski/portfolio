@@ -75,9 +75,15 @@
 .module-card__top { display: flex; justify-content: space-between; align-items: center; font-size: 11px; color: var(--accent-text); }
 .module-card__led {
   width: 8px; height: 8px; border-radius: 50%;
-  background: var(--ok);
-  box-shadow: 0 0 6px color-mix(in srgb, var(--ok) 60%, transparent);
+  background: var(--led);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--led) 60%, transparent);
+  transition: background-color 0.3s ease;
 }
+/* LED colour: live cards follow their check; the rest (internal pages) use the accent. */
+.module-card { --led: var(--accent-text); }
+.module-card[data-state='unknown'] { --led: var(--unknown); }
+.module-card[data-state='ok'] { --led: var(--ok); }
+.module-card[data-state='fail'] { --led: var(--bad); }
 .module-card__head { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .module-card__icon { color: var(--accent-text); }
 /* Brand marks are solid shapes: a little smaller than the line icons so both look the same weight. */
@@ -85,8 +91,8 @@
 .module-card__title { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: 0.01em; }
 .module-card__rule { height: 1px; background: var(--line); }
 .module-card__body { display: flex; flex-direction: column; gap: 4px; font-size: 11px; line-height: 1.4; }
-.module-card__status { display: flex; align-items: center; gap: 7px; color: var(--ok); }
-.module-card__status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--ok); }
+.module-card__status { display: flex; align-items: center; gap: 7px; color: var(--led); }
+.module-card__status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--led); }
 .module-card__desc { margin: 0; color: var(--muted); white-space: pre-line; }
 
 /* Inside the monitor: two rows that share the remaining height. */

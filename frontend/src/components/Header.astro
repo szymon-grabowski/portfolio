@@ -1,15 +1,20 @@
 ---
 import { SITE } from '../data/site';
+import { STATUS_TEXT } from '../data/status';
 import ThemePicker from './ThemePicker.astro';
 ---
 <header class="bar">
   <div class="bar__name">{SITE.owner}</div>
   <div class="sep"></div>
+  <div class="bar__role">{SITE.role}</div>
   <div class="rule"></div>
   <div class="bar__tags">{SITE.tags}</div>
   <div class="sep sep--optional"></div>
   <div class="bar__version">{SITE.version}</div>
   <div class="sep sep--optional"></div>
-  <div class="bar__status"><div class="bar__led"></div><span>{SITE.status}</span></div>
+  <!-- Summary of every live check (scripts/status.ts); stays neutral without data. -->
+  <div class="bar__status" data-status-summary data-state="unknown" role="status">
+    <div class="bar__led" aria-hidden="true"></div><span data-status-text>{STATUS_TEXT.checking}</span>
+  </div>
   <ThemePicker />
 </header>

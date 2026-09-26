@@ -23,3 +23,12 @@ ingress:
     certResolver: ""   # or Traefik ACME resolver
   hsts: false
   redirectWww: false
+
+# /api/status for the Command Center LEDs: nginx proxies one fixed Prometheus query
+# (site_status, recording rules in values/kube-prometheus-stack.yaml). No visitor input reaches Prometheus.
+statusApi:
+  enabled: true
+  prometheusUrl: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+  resolver: 10.43.0.10          # cluster DNS (k3s default); nginx resolves the upstream at request time
+  # Production is still served outside the cluster, so it reads the status cross-origin.
+  allowedOrigins: '^https://(www\.|next\.)?szymongrabowski\.dev$'

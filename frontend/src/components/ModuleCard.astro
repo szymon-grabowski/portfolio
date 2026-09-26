@@ -8,8 +8,12 @@ interface Props {
 }
 const { module, number } = Astro.props;
 const external = module.external && module.href !== '#';
+// Cards with a live check start as "checking" and get their state from scripts/status.ts.
+const live = module.check
+  ? { 'data-check': module.check, 'data-state': 'unknown', 'data-ok': module.status, 'data-fail': module.failStatus ?? 'failing' }
+  : {};
 ---
-<a class="module-card" href={module.href} {...external ? { target: '_blank', rel: 'noopener' } : {}}>
+<a class="module-card" href={module.href} {...external ? { target: '_blank', rel: 'noopener' } : {}} {...live}>
   <div class="module-card__top">
     <span>{String(number).padStart(2, '0')}</span>
     <i class="module-card__led" aria-hidden="true"></i>
@@ -20,7 +24,7 @@ const external = module.external && module.href !== '#';
   </div>
   <div class="module-card__rule"></div>
   <div class="module-card__body">
-    <span class="module-card__status">{module.status}</span>
+    <span class="module-card__status" data-status-text>{module.check ? 'checking' : module.status}</span>
     <p class="module-card__desc">{module.description}</p>
   </div>
 </a>

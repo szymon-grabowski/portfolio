@@ -1,5 +1,34 @@
+# Alerts go by email to grabowski.szymon@proton.me. Off until an SMTP relay is chosen:
+#   1. kubectl -n monitoring create secret generic alertmanager-smtp --from-literal=password='<SMTP password>'
+#   2. fill smtp_smarthost / smtp_from / smtp_auth_username below
+#   3. enabled: true
+# Until then the rules below still evaluate; firing alerts are visible in Grafana (Alerting → Alert rules).
 alertmanager:
   enabled: false
+  alertmanagerSpec:
+    secrets: [alertmanager-smtp]   # mounted at /etc/alertmanager/secrets/alertmanager-smtp/
+    retention: 120h
+    resources:
+      requests: { cpu: 5m, memory: 32Mi }
+      limits: { memory: 64Mi }
+  config:
+    global:
+      smtp_smarthost: smtp.example.com:587        # set with the chosen relay
+      smtp_from: alerts@example.com               # an address the relay may send from
+      smtp_auth_username: CHANGE_ME
+      smtp_auth_password_file: /etc/alertmanager/secrets/alertmanager-smtp/password
+      smtp_require_tls: true
+    route:
+      receiver: email
+      group_by: [alertname, target]
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 12h
+    receivers:
+      - name: email
+        email_configs:
+          - to: grabowski.szymon@proton.me
+            send_resolved: true
 grafana:
   enabled: false
 kubeApiServer:
@@ -14,6 +43,64 @@ kubeProxy:
   enabled: false
 defaultRules:
   create: false
+
+additionalPrometheusRulesMap:
+  site:
+    groups:
+      # One series per Command Center card: 1 = OK, 0 = failing, missing = no data.
+      # The site reads only this metric, through nginx at /api/status (charts/portfolio).
+      - name: site-status
+        rules:
+          - record: site_status
+            expr: max(probe_success{target="production"})
+            labels: { check: site }
+          - record: site_status
+            expr: max(probe_success{target="repository"})
+            labels: { check: repository }
+          - record: site_status
+            expr: max(probe_success{target="ci"})
+            labels: { check: cicd }
+          - record: site_status
+            expr: max(probe_success{target="argocd"})
+            labels: { check: argocd }
+          - record: site_status
+            expr: >-
+              min(kube_node_status_condition{condition="Ready", status="true"})
+              * min(kube_deployment_status_replicas_available >= bool kube_deployment_spec_replicas)
+            labels: { check: kubernetes }
+          - record: site_status
+            expr: max(probe_success{target="grafana"})
+            labels: { check: grafana }
+          - record: site_status
+            expr: max(up{job="kube-prometheus-stack-prometheus", container="prometheus"})
+            labels: { check: prometheus }
+          - record: site_status
+            expr: max(probe_success{target="loki"})
+            labels: { check: loki }
+      - name: site-alerts
+        rules:
+          - alert: SiteDown
+            expr: probe_success{target="production"} == 0
+            for: 3m
+            labels: { severity: critical }
+            annotations:
+              summary: szymongrabowski.dev is not responding
+              description: The blackbox probe of https://szymongrabowski.dev/ has failed for 3 minutes.
+          # Let's Encrypt certificates are renewed 30 days before expiry: under 21 days means renewal is failing.
+          - alert: CertificateExpiresSoon
+            expr: min by (target) ((probe_ssl_earliest_cert_expiry - time()) / 86400) < 21
+            for: 1h
+            labels: { severity: warning }
+            annotations:
+              summary: 'TLS certificate for {{ $labels.target }} expires in {{ $value | printf "%.0f" }} days'
+              description: Automatic renewal has not happened; check certbot on the server.
+          - alert: CertificateExpiresVerySoon
+            expr: min by (target) ((probe_ssl_earliest_cert_expiry - time()) / 86400) < 7
+            for: 10m
+            labels: { severity: critical }
+            annotations:
+              summary: 'TLS certificate for {{ $labels.target }} expires in {{ $value | printf "%.0f" }} days'
+              description: Renew now, or visitors will see a certificate error.
 
 kubelet:
   serviceMonitor:
