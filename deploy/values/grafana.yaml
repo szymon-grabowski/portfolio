@@ -105,7 +105,9 @@ dashboards:
       json: |
         {
           "uid": "portfolio-overview",
-          "title": "Portfolio: what is happening",
+          "title": "Portfolio: metrics",
+          "tags": ["portfolio"],
+          "links": [ { "type": "link", "title": "Logs", "url": "/d/portfolio-logs", "icon": "doc", "keepTime": true } ],
           "time": { "from": "now-24h", "to": "now" },
           "refresh": "1m",
           "panels": [
@@ -133,19 +135,31 @@ dashboards:
               "options": { "graphMode": "none", "colorMode": "none", "reduceOptions": { "calcs": ["lastNotNull"] } } },
             { "type": "timeseries", "title": "Response time (s)", "gridPos": { "x": 0, "y": 4, "w": 12, "h": 8 },
               "datasource": { "type": "prometheus", "uid": "prometheus" },
-              "targets": [ { "refId": "A", "expr": "probe_duration_seconds", "legendFormat": "{{instance}}" } ] },
+              "targets": [ { "refId": "A", "expr": "max by (instance) (probe_duration_seconds)", "legendFormat": "{{instance}}" } ] },
             { "type": "timeseries", "title": "Memory by namespace", "gridPos": { "x": 12, "y": 4, "w": 12, "h": 8 },
               "datasource": { "type": "prometheus", "uid": "prometheus" },
               "targets": [ { "refId": "A", "expr": "sum by (namespace) (container_memory_working_set_bytes{container!=\"\"})",
                              "legendFormat": "{{namespace}}" } ],
-              "fieldConfig": { "defaults": { "unit": "bytes" } } },
-            { "type": "logs", "title": "Deployments (Argo CD)", "gridPos": { "x": 0, "y": 12, "w": 24, "h": 9 },
+              "fieldConfig": { "defaults": { "unit": "bytes" } } }
+          ]
+        }
+    portfolio-logs:
+      json: |
+        {
+          "uid": "portfolio-logs",
+          "title": "Portfolio: logs",
+          "tags": ["portfolio"],
+          "links": [ { "type": "link", "title": "Metrics", "url": "/d/portfolio-overview", "icon": "dashboard", "keepTime": true } ],
+          "time": { "from": "now-24h", "to": "now" },
+          "refresh": "1m",
+          "panels": [
+            { "type": "logs", "title": "Deployments (Argo CD)", "gridPos": { "x": 0, "y": 0, "w": 24, "h": 12 },
               "datasource": { "type": "loki", "uid": "loki" },
               "targets": [ { "refId": "A", "expr": "{namespace=\"argocd\", app=\"argocd-application-controller\"} |~ \"(?i)sync operation|updated sync status|updated health status\"" } ],
               "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending" } },
-            { "type": "logs", "title": "Site access log (IPs anonymised)", "gridPos": { "x": 0, "y": 21, "w": 24, "h": 9 },
+            { "type": "logs", "title": "Site requests (IPs anonymised; uptime probes and deploy checks hidden)", "gridPos": { "x": 0, "y": 12, "w": 24, "h": 14 },
               "datasource": { "type": "loki", "uid": "loki" },
-              "targets": [ { "refId": "A", "expr": "{namespace=\"portfolio\"}" } ],
+              "targets": [ { "refId": "A", "expr": "{namespace=\"portfolio\"} |~ \"\\\"(GET|HEAD|POST|PUT|DELETE|OPTIONS) \" != \"Blackbox-Exporter\" != \"GET /version.txt\"" } ],
               "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending" } }
           ]
         }
