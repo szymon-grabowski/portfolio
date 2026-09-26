@@ -3,8 +3,8 @@ controller:
   replicas: 1
 alloy:
   resources:
-    requests: { cpu: 20m, memory: 64Mi }
-    limits: { memory: 128Mi }
+    requests: { cpu: 20m, memory: 128Mi }   # 24h peak 112Mi
+    limits: { memory: 192Mi }
   configMap:
     content: |
       discovery.kubernetes "pods" {
@@ -54,5 +54,5 @@ alloy:
       }
 configReloader:
   resources:
-    requests: { cpu: 5m, memory: 16Mi }
-    limits: { memory: 32Mi }
+    requests: { cpu: 5m, memory: 24Mi }     # 24h peak 19Mi
+    limits: { memory: 48Mi }

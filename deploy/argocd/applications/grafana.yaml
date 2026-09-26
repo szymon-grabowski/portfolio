@@ -18,6 +18,9 @@ spec:
     - repoURL: https://github.com/szymon-grabowski/portfolio.git
       targetRevision: main
       ref: values
+    - repoURL: https://github.com/szymon-grabowski/portfolio.git
+      targetRevision: main
+      path: deploy/dashboards
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
