@@ -14,6 +14,6 @@ export const SITE = {
   /** Shown in the header; bump it in package.json (`npm version minor|patch --no-git-tag-version`). */
   version: `v${version}`,
   traits: ['DEVOPS ENGINEER', 'INFRASTRUCTURE AS CODE', 'OBSERVABILITY DRIVEN', 'CONTINUOUSLY IMPROVING'],
-  motto: 'BUILD A BETTER TOMORROW',
+  motto: 'OPEN TO DEVOPS / CLOUD ROLES',
   verbs: ['DEPLOY', 'EXPLORE', 'AUTOMATE', 'IMPROVE'],
 };
