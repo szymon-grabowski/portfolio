@@ -150,3 +150,15 @@ body:not(.framed) .sub-grid { flex: none; }
   body:not(.framed) .lane { grid-template-columns: minmax(0, 1fr); gap: 6px; }
   body:not(.framed) .skills__row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 }
+
+/* ---------- 404 ---------- */
+.not-found__body { display: flex; flex-direction: column; gap: 10px; padding: 24px 18px; font-size: 14px; }
+.not-found__cmd, .not-found__err { margin: 0; overflow-wrap: anywhere; }
+.not-found__err { color: var(--status-bad); }
+.not-found__links { margin: 12px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 10px; }
+.not-found__links a {
+  display: inline-block; padding: 6px 10px;
+  color: var(--accent-text); text-decoration: none;
+  border: 1px solid var(--line); border-radius: 4px;
+}
+.not-found__links a:hover { border-color: var(--accent); color: var(--text); }
