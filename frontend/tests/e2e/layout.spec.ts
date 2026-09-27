@@ -6,11 +6,11 @@ for (const path of PAGES) {
   test.describe(`layout ${path}`, () => {
     test('no horizontal scroll', async ({ page }) => {
       await page.goto(path);
-      // Mobile browsers widen innerWidth to fit an overflowing page, so compare with the screen too.
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - Math.min(window.innerWidth, window.screen.width),
-      );
-      expect(overflow).toBeLessThanOrEqual(0);
+      // Compare with the viewport the test set, not innerWidth: mobile browsers widen innerWidth
+      // to fit an overflowing page (so the overflow reads 0), and headless Firefox reports a
+      // fixed 1366px screen whatever the window size.
+      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(scrollWidth).toBeLessThanOrEqual(page.viewportSize()!.width);
     });
 
     test('black page background (no white flash around the screen)', async ({ page }) => {
@@ -49,11 +49,11 @@ test.describe('narrow phone (360px)', () => {
   for (const path of PAGES) {
     test(`no horizontal scroll ${path}`, async ({ page }) => {
       await page.goto(path);
-      // Mobile browsers widen innerWidth to fit an overflowing page, so compare with the screen too.
-      const overflow = await page.evaluate(
-        () => document.documentElement.scrollWidth - Math.min(window.innerWidth, window.screen.width),
-      );
-      expect(overflow).toBeLessThanOrEqual(0);
+      // Compare with the viewport the test set, not innerWidth: mobile browsers widen innerWidth
+      // to fit an overflowing page (so the overflow reads 0), and headless Firefox reports a
+      // fixed 1366px screen whatever the window size.
+      const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(scrollWidth).toBeLessThanOrEqual(page.viewportSize()!.width);
     });
   }
 });
