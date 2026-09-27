@@ -5,7 +5,8 @@ import { DEFAULT_THEME, THEMES } from '../data/themes';
   <i class="theme-toggle__swatch"></i><span class="theme-toggle__label">THEME</span>
 </button>
 <div class="theme-panel" id="theme-panel" data-theme-panel>
-  <h2 class="theme-panel__title" id="theme-panel-title">Theme</h2>
+  <!-- Not a heading: the panel sits in <header>, before each page's <h1>. It still names the radio group. -->
+  <p class="theme-panel__title" id="theme-panel-title">Theme</p>
   <div role="radiogroup" aria-labelledby="theme-panel-title">
     {THEMES.map((theme) => (
       <label class="theme-option">
