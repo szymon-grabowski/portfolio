@@ -25,7 +25,8 @@ test.describe('404', () => {
   test('unknown paths get a real 404 page', async ({ page }) => {
     const res = await page.goto('/no-such-page');
     expect(res?.status()).toBe(404);
-    await expect(page.getByRole('heading', { level: 1, name: 'NOT FOUND' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'SYSTEM DOWN' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'REBOOT' })).toHaveAttribute('href', '/');
     await expect(page.locator('[data-path]')).toHaveText('/no-such-page');
     await page.getByRole('link', { name: 'cd /command-center' }).click();
     await expect(page).toHaveURL('/command-center/');

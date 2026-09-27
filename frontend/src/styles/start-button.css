@@ -5,7 +5,7 @@
   opacity: 0; visibility: hidden; transform: translateY(6px);
   transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
 }
-.boot-pending .start.is-visible { opacity: 0; visibility: hidden; }
+.boot-pending [data-start].is-visible { opacity: 0; visibility: hidden; }
 .start.is-visible {
   opacity: 1; visibility: visible; transform: none;
   transition: opacity 0.3s ease, transform 0.3s ease;
@@ -39,3 +39,13 @@ body.framed .start { margin-top: 16px; }
 @media (prefers-reduced-motion: reduce) {
   .start, .start.is-visible { transition: none; }
 }
+
+/* 404: REBOOT in red instead of the green START. */
+.start--down .start__corner { border-color: var(--status-bad); }
+.start--down .start__button {
+  color: var(--status-bad);
+  background: color-mix(in srgb, var(--status-bad) 6%, transparent);
+  border-color: var(--status-bad);
+}
+.start--down .start__button:hover { background: color-mix(in srgb, var(--status-bad) 14%, transparent); }
+.start--down .start__button:hover svg { transform: rotate(-30deg); }

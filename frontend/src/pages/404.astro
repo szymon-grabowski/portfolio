@@ -1,23 +1,10 @@
 ---
 /** Served by nginx for unknown paths (error_page 404), with a real 404 status. */
 import ScreenLayout from '../layouts/ScreenLayout.astro';
-import ScreenBar from '../components/ScreenBar.astro';
+import SystemDown from '../components/SystemDown.astro';
+import Footer from '../components/Footer.astro';
 ---
 <ScreenLayout title="404 — Szymon Grabowski" description="Page not found.">
-  <section class="cc sub not-found" aria-labelledby="nf-title">
-    <ScreenBar num="404" title="NOT FOUND" titleId="nf-title" back="/" />
-    <div class="not-found__body">
-      <p class="not-found__cmd"><span class="prompt__user">devops@portfolio:~$</span> cd <span data-path>this-page</span></p>
-      <p class="not-found__err">bash: cd: No such file or directory</p>
-      <ul class="not-found__links">
-        <li><a href="/command-center/">cd /command-center</a></li>
-        <li><a href="/about/">cd /about</a></li>
-        <li><a href="/project/">cd /project</a></li>
-      </ul>
-    </div>
-  </section>
-  <script is:inline>
-    // Show the path the visitor asked for (text only, never HTML).
-    document.querySelector('[data-path]').textContent = decodeURIComponent(location.pathname);
-  </script>
+  <SystemDown />
+  <Footer slot="footer" />
 </ScreenLayout>

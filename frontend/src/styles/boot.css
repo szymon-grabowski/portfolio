@@ -1,4 +1,5 @@
-.boot { width: min(420px, 100%); display: flex; flex-direction: column; }
+/* 460px: the longest profile line and its [OK] fit on one row inside the monitor. */
+.boot { width: min(460px, 100%); display: flex; flex-direction: column; }
 
 .boot__init {
   display: flex; align-items: center; gap: 14px;
@@ -25,7 +26,7 @@
 .log-line__tail { white-space: nowrap; }
 .log-line__status { flex: none; white-space: nowrap; }
 .log-line.is-pending,
-.boot-pending .log-line { visibility: hidden; }
+.boot-pending [data-boot] .log-line { visibility: hidden; }
 .log-line__dots { display: inline-block; width: 3ch; }
 .log-line__status {
   min-width: 5ch; text-align: right;
@@ -63,3 +64,12 @@ body.framed .boot__verbs  { margin-top: 10px; }
 @media (prefers-reduced-motion: reduce) {
   .prompt__cursor { animation: none; }
 }
+
+/* ---------- 404: the start screen with everything failing (fixed colours, every theme) ---------- */
+.boot--down .boot__init { color: var(--status-bad); }
+.boot--down .boot__title span { color: var(--status-bad); }
+.log-line__status.is-fail { color: var(--status-bad); }
+.log-line__path { color: var(--status-warn); overflow-wrap: anywhere; }
+.boot--down .world-map { color: var(--status-bad); opacity: 0.45; }
+.boot__exits a { color: var(--accent-text); text-decoration: none; border-bottom: 1px dashed var(--dim); }
+.boot__exits a:hover { color: var(--text); border-bottom-color: var(--accent); }
