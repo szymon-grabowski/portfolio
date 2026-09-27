@@ -58,7 +58,21 @@ Zapytania z publicznej Grafany są ograniczone (Prometheus: 30 s, 5 mln próbek;
 | Argo CD | aplikacje, zasoby, historia sync (rola `role:public`); bez logów podów, exec, sync | pełny |
 | Prometheus, Loki | tylko przez panele Grafany | tunel SSH |
 
-IP w logach są skracane w Alloy (ostatni oktet → 0). nginx na hoście: HTTPS (Certbot); dla `grafana.`, `argocd.` i `next.` limit 20 zapytań/s na IP (burst 100).
+IP w logach są skracane w Alloy (ostatni oktet → 0). nginx na hoście: HTTPS (Certbot).
+
+**Limity i blokady** (`deploy/host/`, instalacja: `sudo deploy/host/install-rate-limits.sh`):
+
+| Warstwa | Reguła | Skutek |
+|---|---|---|
+| nginx `szymongrabowski.dev` | 10 zapytań/s na IP, burst 40 (wizyta: szczyt 8/s) | nadmiar → 429 |
+| nginx `grafana.`, `argocd.`, `next.` | 20 zapytań/s na IP, burst 100 (dashboard: szczyt 30–36/s) | nadmiar → 429 |
+| nginx, wszystkie | 20 równoczesnych połączeń na IP | nadmiar → 429 |
+| fail2ban `nginx-limit-req` | > 20 odrzuceń w 1 min | ban 1 h, kolejne ×2, maks. 1 tydzień |
+| fail2ban `nginx-probes` | 5 prób `/.env`, `/.git`, `wp-*`, phpMyAdmin… w 10 min | ban 24 h |
+
+Bany tylko na portach 80/443 — SSH działa zawsze. Zdjęcie: `sudo fail2ban-client unban <IP>` (lub `--all`).
+Podgląd: `sudo fail2ban-client status nginx-limit-req`. Nie chroni przed rozproszonym DDoS (wiele IP, zalanie łącza) —
+na to potrzebny jest proxy typu Cloudflare.
 
 Tunel (Prometheus lub panele bez przechodzenia przez internet):
 ```bash
