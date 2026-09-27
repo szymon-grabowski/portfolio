@@ -1,5 +1,5 @@
 image:
-  tag: "cd32aeeb945b2b7591fbfbb1d7ab9f7796eb0134"
+  tag: "c2b4ed3d50728f304350ade6eda8fef10e345dde"
 ingress:
   hosts:
     - next.szymongrabowski.dev
