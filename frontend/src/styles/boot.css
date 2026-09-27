@@ -19,7 +19,11 @@
   min-height: calc(5 * 21px + 4 * 7px);
   font-size: 14px;
 }
-.log-line { display: flex; justify-content: space-between; gap: 16px; white-space: nowrap; }
+.log-line { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+/* Profile lines are long: the text may wrap on narrow phones, the status always stays on the right. */
+.log-line > span:first-child { min-width: 0; }
+.log-line__tail { white-space: nowrap; }
+.log-line__status { flex: none; white-space: nowrap; }
 .log-line.is-pending,
 .boot-pending .log-line { visibility: hidden; }
 .log-line__dots { display: inline-block; width: 3ch; }
@@ -29,6 +33,10 @@
   color: var(--accent-text);
 }
 .log-line__status.is-ok { color: var(--ok); }
+/* "System ready" line: live module count, same fixed colours in every theme. */
+.log-line__status.is-live-ok { color: var(--status-ok); }
+.log-line__status.is-warn { color: var(--status-warn); }
+.log-line__status.is-unknown { color: var(--status-unknown); }
 
 /* Prompt with the always-blinking cursor. */
 .prompt { display: flex; align-items: center; gap: 8px; min-height: 20px; margin-top: 20px; font-size: 14px; }

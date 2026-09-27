@@ -1,9 +1,10 @@
 ---
 /**
- * Rendered in its final state (all [OK], START visible), so the page works
- * without JavaScript. scripts/boot-sequence.ts resets and animates it.
+ * Rendered in its final state (START visible), so the page works without JavaScript.
+ * scripts/boot-sequence.ts resets and animates it; the last line gets the live module count.
  */
 import { BOOT_STEPS } from '../data/boot';
+import { CHECKS } from '../data/status';
 import { SITE } from '../data/site';
 import StartButton from './StartButton.astro';
 import WorldMap from './WorldMap.astro';
@@ -13,12 +14,18 @@ import WorldMap from './WorldMap.astro';
   <h1 class="boot__title">SYSTEM <span>READY</span></h1>
 
   <div class="boot__log" aria-hidden="true">
-    {BOOT_STEPS.map((step, i) => (
-      <div class="log-line" data-log-line>
-        <span>&gt; {step}<span class="log-line__dots" data-dots>{i === BOOT_STEPS.length - 1 ? '.' : '...'}</span></span>
-        <span class="log-line__status is-ok" data-status>[OK]</span>
+    {BOOT_STEPS.map((step, i) => {
+      // The last word stays glued to its dots, so a wrapped line never ends with "..." alone.
+      const cut = step.text.lastIndexOf(' ');
+      return (
+      <div class="log-line" data-log-line data-modules={step.modules ? '' : undefined}>
+        <span>&gt; {step.text.slice(0, cut + 1)}<span class="log-line__tail">{step.text.slice(cut + 1)}<span class="log-line__dots" data-dots>{i === BOOT_STEPS.length - 1 ? '.' : '...'}</span></span></span>
+        {step.modules
+          ? <span class="log-line__status is-unknown" data-status>[--/{CHECKS.length}]</span>
+          : <span class="log-line__status is-ok" data-status>[OK]</span>}
       </div>
-    ))}
+      );
+    })}
   </div>
   <p class="sr-only" aria-live="polite" data-boot-status></p>
 

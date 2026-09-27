@@ -136,3 +136,10 @@ body:not(.framed) .cc-group__grid { height: auto; }
 @media (max-width: 420px) {
   body:not(.framed) .cc-bar__num { display: none; }
 }
+/* Narrow phones: back link, title, LED and next link must fit in one row. */
+@media (max-width: 480px) {
+  body:not(.framed) .cc-bar { gap: 10px; padding: 0 10px; }
+  body:not(.framed) .cc-bar__title { min-width: 0; font-size: 14px; white-space: normal; line-height: 1.2; }
+  body:not(.framed) .cc-bar__ready { font-size: 0; gap: 0; }
+  body:not(.framed) .cc-bar__back { padding: 0 8px; }
+}
