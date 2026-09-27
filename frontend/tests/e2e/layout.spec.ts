@@ -57,3 +57,20 @@ test.describe('narrow phone (360px)', () => {
     });
   }
 });
+
+// Without the monitor the page scrolls; body carries the page background, so it must cover
+// the whole page (otherwise the black html background shows below the first screen).
+test.describe('full-screen background', () => {
+  test.use({ viewport: { width: 412, height: 800 } });
+  for (const path of PAGES) {
+    test(`body covers the whole page ${path}`, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('body')).not.toHaveClass(/framed/);
+      const { bodyH, pageH } = await page.evaluate(() => ({
+        bodyH: document.body.getBoundingClientRect().height,
+        pageH: document.documentElement.scrollHeight,
+      }));
+      expect(bodyH).toBeGreaterThanOrEqual(pageH - 1);
+    });
+  }
+});

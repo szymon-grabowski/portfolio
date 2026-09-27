@@ -114,6 +114,11 @@ body:not(.framed) .cc-group__grid { height: auto; }
   body:not(.framed) .cc-bar .rule,
   body:not(.framed) .cc-bar .sep { display: none; }
 }
+/* Phones: card text at 12-13px (numbers stay small). */
+@media (max-width: 640px) {
+  body:not(.framed) .module-card__status { font-size: 12px; }
+  body:not(.framed) .module-card__desc { font-size: 13px; }
+}
 /* Phones: one column of compact rows (icon | title + status | number), not tall tiles. */
 @media (max-width: 560px) {
   body:not(.framed) .cc-group__grid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
