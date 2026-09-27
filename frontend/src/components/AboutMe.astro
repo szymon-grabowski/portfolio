@@ -12,7 +12,8 @@ import ScreenBar from './ScreenBar.astro';
 const hasCv = existsSync(join(process.cwd(), 'public', CV_PATH));
 ---
 <section class="cc sub" aria-labelledby="about-title">
-  <ScreenBar num="2.1" title="ABOUT ME" titleId="about-title" back="/command-center/" />
+  <ScreenBar num="2.1" title="ABOUT ME" titleId="about-title" back="/command-center/"
+             next={{ href: '/project/', num: '2.2', label: 'About this project' }} />
 
   <section class="sub-grid sub-grid--about sub-grid--scroll" tabindex="0" aria-label="About me content">
     <section class="cc-group sub-panel sub-panel--profile" aria-label="PROFILE">

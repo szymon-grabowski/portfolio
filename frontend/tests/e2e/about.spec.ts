@@ -62,6 +62,11 @@ test.describe('2.1 about me', () => {
     await page.getByRole('link', { name: 'cd ..' }).click();
     await expect(page).toHaveURL('/command-center/');
   });
+
+  test('"cd 2.2" next to READY opens About this project', async ({ page }) => {
+    await page.getByRole('link', { name: 'cd 2.2: About this project' }).click();
+    await expect(page).toHaveURL('/project/');
+  });
 });
 
 test.describe('2.2 about this project', () => {
