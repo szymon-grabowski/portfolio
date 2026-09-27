@@ -59,3 +59,30 @@ for (const theme of THEME_IDS) {
     await expect(page.locator('[data-status-summary] .bar__led')).toHaveCSS('background-color', COLORS.fail);
   });
 }
+
+test.describe('boot log module count', () => {
+  const count = (page: import('@playwright/test').Page) => page.locator('[data-modules] [data-status]');
+  // Skip the animation: the count must still appear.
+  test.beforeEach(async ({ page }) => page.emulateMedia({ reducedMotion: 'reduce' }));
+
+  test('all checks OK: green N/N', async ({ page }) => {
+    await page.goto('/');
+    await expect(count(page)).toHaveText(`[${ALL_CHECKS.length}/${ALL_CHECKS.length}]`);
+    await expect(count(page)).toHaveCSS('color', COLORS.ok);
+  });
+
+  test('one check failing: yellow (N-1)/N', async ({ page }) => {
+    await page.unrouteAll();
+    await mockStatus(page, Object.fromEntries(ALL_CHECKS.map((c) => [c, c !== 'loki'])));
+    await page.goto('/');
+    await expect(count(page)).toHaveText(`[${ALL_CHECKS.length - 1}/${ALL_CHECKS.length}]`);
+    await expect(count(page)).toHaveCSS('color', 'rgb(250, 204, 21)');
+  });
+
+  test('checks without data count as not working', async ({ page }) => {
+    await page.unrouteAll();
+    await mockStatus(page, {});
+    await page.goto('/');
+    await expect(count(page)).toHaveText(`[0/${ALL_CHECKS.length}]`);
+  });
+});

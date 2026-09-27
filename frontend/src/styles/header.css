@@ -28,3 +28,15 @@
   .bar__name, .bar__role { font-size: 11px; }
   .bar__status span, .bar .rule { display: none; }
 }
+/* Narrow phones: name and role must fit; the theme button keeps only its swatch (label stays for screen readers). */
+@media (max-width: 420px) {
+  .bar { gap: 8px; letter-spacing: 0.02em; }
+  .theme-toggle__label {
+    position: absolute; width: 1px; height: 1px;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+}
+@media (max-width: 360px) {
+  .bar { padding: 0 10px; }
+  .bar__name, .bar__role { font-size: 10px; letter-spacing: 0; }
+}

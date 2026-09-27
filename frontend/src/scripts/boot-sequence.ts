@@ -1,5 +1,7 @@
 import { BOOT_SESSION_KEY, BOOT_TIMING } from '../data/boot';
+import { CHECKS, type StatusSummary } from '../data/status';
 import { prefersReducedMotion, wait } from './motion';
+import { onStatus } from './status';
 import { readStorage, writeStorage } from './storage';
 
 interface LogLine {
@@ -7,7 +9,11 @@ interface LogLine {
   dots: HTMLElement;
   status: HTMLElement;
   finalDots: string;
+  /** The "System ready" line: shows working checks instead of [OK]. */
+  modules: boolean;
 }
+
+const STATE_CLASSES = ['is-ok', 'is-live-ok', 'is-warn', 'is-unknown'];
 
 export interface BootSequence {
   /** Play the sequence from the start (used by "Replay boot sequence"). */
@@ -42,8 +48,27 @@ export function initBootSequence(): BootSequence | null {
 
   const lines: LogLine[] = [...root.querySelectorAll<HTMLElement>('[data-log-line]')].map((el) => {
     const dots = el.querySelector<HTMLElement>('[data-dots]')!;
-    return { root: el, dots, status: el.querySelector<HTMLElement>('[data-status]')!, finalDots: dots.textContent ?? '' };
+    return {
+      root: el, dots, status: el.querySelector<HTMLElement>('[data-status]')!,
+      finalDots: dots.textContent ?? '', modules: el.hasAttribute('data-modules'),
+    };
   });
+
+  // undefined = not fetched yet, null = no data. Green only when every check passes.
+  let summary: StatusSummary | undefined;
+  const setModules = (line: LogLine) => {
+    line.status.classList.remove(...STATE_CLASSES);
+    if (summary === undefined) {
+      line.status.textContent = `[../${CHECKS.length}]`;
+      line.status.classList.add('is-unknown');
+    } else if (summary === null) {
+      line.status.textContent = `[--/${CHECKS.length}]`;
+      line.status.classList.add('is-unknown');
+    } else {
+      line.status.textContent = `[${summary.ok}/${summary.total}]`;
+      line.status.classList.add(summary.ok === summary.total ? 'is-live-ok' : 'is-warn');
+    }
+  };
 
   let runId = 0;
 
@@ -51,14 +76,19 @@ export function initBootSequence(): BootSequence | null {
     line.root.classList.add('is-pending');
     line.dots.textContent = '';
     line.status.textContent = '';
-    line.status.classList.remove('is-ok');
+    line.status.classList.remove(...STATE_CLASSES);
   };
   const setLineDone = (line: LogLine) => {
     line.root.classList.remove('is-pending');
     line.dots.textContent = line.finalDots;
+    if (line.modules) return setModules(line);
     line.status.textContent = '[OK]';
     line.status.classList.add('is-ok');
   };
+  onStatus((s) => {
+    summary = s;
+    for (const line of lines) if (line.modules && !line.root.classList.contains('is-pending')) setModules(line);
+  });
   const showStart = (visible: boolean) => {
     start.classList.toggle('is-visible', visible);
     startButton.tabIndex = visible ? 0 : -1;

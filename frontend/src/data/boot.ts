@@ -1,11 +1,15 @@
-/** Lines shown in the boot log, in order. */
-export const BOOT_STEPS = [
-  'Initializing systems',
-  'Loading modules',
-  'Checking dependencies',
-  'Establishing connections',
-  'System ready',
-] as const;
+/**
+ * Lines shown in the boot log, in order. The profile lines end in [OK]; the last one
+ * reports how many live checks pass (scripts/status.ts), e.g. [8/8] green or [7/8] yellow.
+ */
+export const BOOT_STEPS: { text: string; modules?: true }[] = [
+  { text: 'Loading profile' },
+  { text: 'Stack: AWS · Terraform · Kubernetes' },
+  // \u00a0 keeps product names on one line when the log wraps on narrow phones.
+  { text: 'CI/CD: GitLab · GitHub\u00a0Actions · Argo\u00a0CD' },
+  { text: 'Location: Racibórz · remote / hybrid' },
+  { text: 'System ready', modules: true },
+];
 
 export const BOOT_TIMING = {
   /** Total time for all lines together, in ms. Split randomly between lines. */

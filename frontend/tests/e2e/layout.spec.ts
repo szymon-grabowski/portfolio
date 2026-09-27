@@ -6,7 +6,10 @@ for (const path of PAGES) {
   test.describe(`layout ${path}`, () => {
     test('no horizontal scroll', async ({ page }) => {
       await page.goto(path);
-      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
+      // Mobile browsers widen innerWidth to fit an overflowing page, so compare with the screen too.
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - Math.min(window.innerWidth, window.screen.width),
+      );
       expect(overflow).toBeLessThanOrEqual(0);
     });
 
@@ -36,6 +39,21 @@ test.describe('monitor frame', () => {
       const body = expect(page.locator('body'));
       await (framed ? body.toHaveClass(/framed/) : body.not.toHaveClass(/framed/));
       await expect(page.locator('.module-card').first()).toBeInViewport();
+    });
+  }
+});
+
+// Narrowest common phones: header (name, role, LED, theme) and boot log must fit.
+test.describe('narrow phone (360px)', () => {
+  test.use({ viewport: { width: 360, height: 780 } });
+  for (const path of PAGES) {
+    test(`no horizontal scroll ${path}`, async ({ page }) => {
+      await page.goto(path);
+      // Mobile browsers widen innerWidth to fit an overflowing page, so compare with the screen too.
+      const overflow = await page.evaluate(
+        () => document.documentElement.scrollWidth - Math.min(window.innerWidth, window.screen.width),
+      );
+      expect(overflow).toBeLessThanOrEqual(0);
     });
   }
 });

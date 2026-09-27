@@ -3,7 +3,7 @@
  * [data-check] card to ok / fail / unknown, plus the summary in the header.
  * Missing data is "unknown", never "ok": the page must not claim health it cannot see.
  */
-import { STATUS_HOSTS, STATUS_REFRESH_MS, STATUS_TEXT, STATUS_URL } from '../data/status';
+import { CHECKS, STATUS_EVENT, STATUS_HOSTS, STATUS_REFRESH_MS, STATUS_TEXT, STATUS_URL, type StatusSummary } from '../data/status';
 
 type State = 'ok' | 'fail' | 'unknown';
 
@@ -30,7 +30,22 @@ async function fetchStatus(url: string): Promise<Map<string, boolean> | null> {
   }
 }
 
+/** Latest result, so late listeners (the boot log) do not wait for the next refresh. */
+let latest: StatusSummary | undefined;
+
+/** Calls `listener` with the latest summary (if any) and after every refresh. */
+export function onStatus(listener: (summary: StatusSummary) => void): void {
+  if (latest !== undefined) listener(latest);
+  document.addEventListener(STATUS_EVENT, (e) => listener((e as CustomEvent<StatusSummary>).detail));
+}
+
+function publish(checks: Map<string, boolean> | null): void {
+  latest = checks ? { ok: CHECKS.filter((c) => checks.get(c) === true).length, total: CHECKS.length } : null;
+  document.dispatchEvent(new CustomEvent<StatusSummary>(STATUS_EVENT, { detail: latest }));
+}
+
 function render(checks: Map<string, boolean> | null): void {
+  publish(checks);
   for (const card of document.querySelectorAll<HTMLElement>('[data-check]')) {
     const value = checks?.get(card.dataset.check ?? '');
     const state: State = value === undefined ? 'unknown' : value ? 'ok' : 'fail';

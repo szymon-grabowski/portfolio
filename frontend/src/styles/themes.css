@@ -12,5 +12,6 @@ html {
      Contrast on every theme background is at least 6.5:1. */
   --status-ok: #4ade80;
   --status-bad: #f87171;
+  --status-warn: #facc15;
   --status-unknown: #9ca3af;
 }

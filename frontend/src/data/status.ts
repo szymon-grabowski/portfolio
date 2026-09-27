@@ -3,7 +3,15 @@
  * Prometheus series (one per check, 1 = OK), served read-only by nginx at /api/status
  * (deploy/charts/portfolio, recording rules in deploy/values/kube-prometheus-stack.yaml).
  */
-export type CheckName = 'site' | 'repository' | 'cicd' | 'argocd' | 'kubernetes' | 'grafana' | 'prometheus' | 'loki';
+/** Every live check; the boot log counts working ones against this list. */
+export const CHECKS = ['site', 'repository', 'cicd', 'argocd', 'kubernetes', 'grafana', 'prometheus', 'loki'] as const;
+export type CheckName = (typeof CHECKS)[number];
+
+/** Fired on document after each status fetch; detail is StatusSummary. */
+export const STATUS_EVENT = 'site-status';
+
+/** Working checks out of all CHECKS; null = no data (fetch failed or not on the real site). */
+export type StatusSummary = { ok: number; total: number } | null;
 
 /** Production is still served outside the cluster, so every host reads the endpoint on next. */
 export const STATUS_URL = 'https://next.szymongrabowski.dev/api/status';
