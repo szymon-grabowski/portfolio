@@ -228,4 +228,7 @@ src/
 - **About me (2.1):** `src/data/profile.ts`; certifications and projects appear once the lists have entries
 - **CV:** put the PDF at `public/cv.pdf`; the card links to it automatically and nginx serves it inline (opens in the browser)
 - **About this project (2.2):** `src/data/project.ts`
+- **Link preview (og.png):** the template is `src/pages/og-image.astro` (1200x630, noindex, not in the sitemap).
+  After changing it or the texts on it: `npm run build`, start `npm run preview -- --port 4400`, then
+  `PORT=4400 npm run og` and commit `public/og.png` + `public/apple-touch-icon.png`. Check the card in LinkedIn Post Inspector.
 - **Colors in new components:** only theme variables (`--accent`, `--accent-text`, `--muted`, `--ok`, `--line`, `--card`…), never hex values

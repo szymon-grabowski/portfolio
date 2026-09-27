@@ -1,7 +1,7 @@
 {
   "name": "szymon-grabowski-portfolio",
   "type": "module",
-  "version": "2.12.0",
+  "version": "2.13.0",
   "private": true,
   "scripts": {
     "dev": "astro dev",
@@ -10,7 +10,8 @@
     "preview": "astro preview",
     "validate:html": "html-validate \"dist/**/*.html\"",
     "test:e2e": "playwright test",
-    "test": "npm run build && npm run validate:html && npm run test:e2e"
+    "test": "npm run build && npm run validate:html && npm run test:e2e",
+    "og": "node scripts/render-og.mjs"
   },
   "dependencies": {
     "@astrojs/check": "^0.9.10",

@@ -1,0 +1,59 @@
+---
+/**
+ * Template for public/og.png (link previews), 1200x630. Not a page for visitors:
+ * noindex, left out of the sitemap. Render it with `npm run og` after a build.
+ */
+import fontUrl from '@fontsource-variable/jetbrains-mono/files/jetbrains-mono-latin-wght-normal.woff2?url';
+import WorldMap from '../components/WorldMap.astro';
+import { SITE } from '../data/site';
+
+const LINES = [
+  ['Stack: AWS · Terraform · Kubernetes', '[OK]'],
+  ['CI/CD: GitLab · GitHub Actions · Argo CD', '[OK]'],
+  ['Location: Racibórz · remote / hybrid', '[OK]'],
+  ['System ready.', '[8/8]'],
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="robots" content="noindex" />
+    <title>OG image template</title>
+    <style is:global set:html={`@font-face{font-family:'JetBrains Mono';font-weight:100 800;src:url(${fontUrl}) format('woff2')}`}></style>
+    <style is:global>
+      * { box-sizing: border-box; margin: 0; }
+      html, body { width: 1200px; height: 630px; overflow: hidden; background: #07060b; color: #e9e4f4; font-family: 'JetBrains Mono', monospace; }
+      .card {
+        position: absolute; inset: 28px; padding: 44px 56px;
+        border: 2px solid #2c2a33; border-radius: 18px;
+        background: radial-gradient(ellipse 70% 60% at 30% 40%, #15102a, #0d0a15);
+        box-shadow: 0 0 60px rgba(162, 138, 240, 0.12), inset 0 1px 0 rgba(162, 138, 240, 0.2);
+      }
+      .bar { display: flex; align-items: center; gap: 16px; font-size: 15px; letter-spacing: 0.06em; color: #a28af0; }
+      .rule { flex: 1; height: 1px; background: rgba(162, 138, 240, 0.34); }
+      .led { width: 11px; height: 11px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 10px rgba(74, 222, 128, 0.7); }
+      h1 { margin-top: 26px; font-size: 74px; font-weight: 800; line-height: 1; letter-spacing: -0.01em; }
+      h2 { margin-top: 12px; font-size: 28px; font-weight: 600; letter-spacing: 0.08em; color: #a28af0; }
+      .log { margin-top: 30px; width: 720px; display: flex; flex-direction: column; gap: 9px; font-size: 21px; }
+      .log div { display: flex; justify-content: space-between; }
+      .ok { color: #4ade80; }
+      .world-map { position: absolute; right: 60px; top: 250px; width: 300px; height: auto; color: #a28af0; opacity: 0.55; }
+      .foot { position: absolute; left: 56px; right: 56px; bottom: 40px; display: flex; align-items: center; gap: 18px; font-size: 17px; letter-spacing: 0.08em; color: #a28af0; }
+      .foot .rule { background: rgba(162, 138, 240, 0.25); }
+      .url { color: #e9e4f4; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="bar"><span>&gt; INITIALIZING DEVOPS ENVIRONMENT</span><div class="rule"></div><span class="led"></span><span>ALL SYSTEMS OPERATIONAL</span></div>
+      <h1>{SITE.owner}</h1>
+      <h2>DEVOPS / CLOUD ENGINEER</h2>
+      <div class="log">
+        {LINES.map(([text, status]) => <div><span>&gt; {text}{status === '[OK]' ? '...' : ''}</span><span class="ok">{status}</span></div>)}
+      </div>
+      <WorldMap />
+      <div class="foot"><span class="url">szymongrabowski.dev</span><div class="rule"></div><span>{SITE.motto}</span></div>
+    </div>
+  </body>
+</html>

@@ -32,3 +32,35 @@ test.describe('404', () => {
     await expect(page).toHaveURL('/command-center/');
   });
 });
+
+test.describe('link previews (Open Graph)', () => {
+  for (const path of PAGES) {
+    test(`${path} has a full card on the canonical origin`, async ({ page }) => {
+      await page.goto(path);
+      const meta = (sel: string) => page.locator(sel).getAttribute('content');
+      const url = `https://szymongrabowski.dev${path}`;
+      expect(await page.locator('link[rel="canonical"]').getAttribute('href')).toBe(url);
+      expect(await meta('meta[property="og:url"]')).toBe(url);
+      expect(await meta('meta[property="og:title"]')).toBe(await page.title());
+      expect(await meta('meta[property="og:description"]')).toBe(await meta('meta[name="description"]'));
+      expect(await meta('meta[property="og:image"]')).toBe('https://szymongrabowski.dev/og.png');
+      expect(await meta('meta[name="twitter:card"]')).toBe('summary_large_image');
+    });
+  }
+
+  test('og.png and the iOS icon are served as PNG', async ({ request }) => {
+    for (const file of ['/og.png', '/apple-touch-icon.png']) {
+      const res = await request.get(file);
+      expect(res.status(), file).toBe(200);
+      expect(res.headers()['content-type'], file).toBe('image/png');
+    }
+  });
+
+  test('the 404 page and the OG template stay out of search results', async ({ page }) => {
+    for (const path of ['/404.html', '/og-image/']) {
+      await page.goto(path);
+      await expect(page.locator('meta[name="robots"]'), path).toHaveAttribute('content', 'noindex');
+      await expect(page.locator('link[rel="canonical"]'), path).toHaveCount(0);
+    }
+  });
+});
