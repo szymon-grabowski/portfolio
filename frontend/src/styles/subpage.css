@@ -151,3 +151,11 @@ body:not(.framed) .sub-grid { flex: none; }
   body:not(.framed) .skills__row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 }
 
+
+/* Phones: content text at 12-13px (the 11px desktop sizes are small on a handset);
+   section labels and navigation stay compact. The monitor view is unchanged. */
+@media (max-width: 640px) {
+  body:not(.framed) :is(.bullets, .lane__steps li, .skills dd) { font-size: 13px; }
+  body:not(.framed) :is(.link-card__desc, .entries__meta, .job__context, .job__period,
+                        .profile__location, .skills dt, .chip) { font-size: 12px; }
+}
