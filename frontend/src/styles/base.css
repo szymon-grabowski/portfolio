@@ -28,6 +28,9 @@ body {
   -webkit-font-smoothing: antialiased;
   transition: background-color var(--theme-fade), color var(--theme-fade);
 }
+/* Without the monitor (phones, narrow windows) the page scrolls: body must grow with it, or the
+   black html background shows below the first screen. The monitor frame needs the fixed height. */
+body:not(.framed) { height: auto; }
 
 :focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; }
 
