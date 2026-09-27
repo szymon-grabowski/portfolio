@@ -1,0 +1,53 @@
+---
+/**
+ * 404 page: the start screen with everything failing. Static (no boot animation);
+ * the requested path is filled in by a tiny inline script, as text only.
+ */
+import WorldMap from './WorldMap.astro';
+
+const EXITS = [
+  { href: '/command-center/', label: 'cd /command-center' },
+  { href: '/about/', label: 'cd /about' },
+  { href: '/project/', label: 'cd /project' },
+];
+---
+<section class="boot boot--down" aria-labelledby="down-title">
+  <div class="boot__init"><span>&gt; ROUTE LOOKUP FAILED · 404</span><div class="rule"></div></div>
+  <h1 class="boot__title" id="down-title">SYSTEM <span>DOWN</span></h1>
+
+  <div class="boot__log">
+    <div class="log-line">
+      <span>&gt; Resolving <span class="log-line__path" data-path>this page</span>...</span>
+      <span class="log-line__status is-fail">[FAIL]</span>
+    </div>
+    <div class="log-line"><span>&gt; Loading page...</span><span class="log-line__status is-fail">[404]</span></div>
+    <div class="log-line"><span>&gt; Looking for a redirect...</span><span class="log-line__status is-warn">[NONE]</span></div>
+    <div class="log-line"><span>&gt; Restoring service...</span><span class="log-line__status is-fail">[FAIL]</span></div>
+    <div class="log-line"><span>&gt; All systems are down.</span><span class="log-line__status is-fail">[0/1]</span></div>
+  </div>
+
+  <div class="prompt">
+    <span class="prompt__user">devops@portfolio:~$</span>
+    <div class="prompt__cursor"></div>
+  </div>
+
+  <div class="start start--down is-visible">
+    <i class="start__corner start__corner--tl"></i><i class="start__corner start__corner--tr"></i>
+    <i class="start__corner start__corner--bl"></i><i class="start__corner start__corner--br"></i>
+    <a class="start__button" href="/">
+      REBOOT
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M20 12a8 8 0 1 1-2.34-5.66M20 4v5h-5" />
+      </svg>
+    </a>
+  </div>
+
+  <WorldMap />
+  <nav class="boot__verbs boot__exits" aria-label="Pages that exist">
+    {EXITS.map((exit) => <a href={exit.href}>{exit.label}</a>)}
+  </nav>
+</section>
+<script is:inline>
+  document.querySelector('[data-path]').textContent = decodeURIComponent(location.pathname);
+</script>

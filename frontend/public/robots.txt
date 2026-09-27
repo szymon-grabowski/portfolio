@@ -1,0 +1,7 @@
+# Production robots.txt. next.szymongrabowski.dev answers "Disallow: /" instead (nginx/nginx.conf).
+User-agent: *
+Allow: /
+# The CV is linked for visitors, not for search results (it holds a phone number).
+Disallow: /cv.pdf
+
+Sitemap: https://szymongrabowski.dev/sitemap-index.xml

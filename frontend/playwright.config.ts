@@ -1,6 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const PORT = 4321;
+// PORT lets a second checkout (git worktree) test its own build next to a running preview.
+const PORT = Number(process.env.PORT ?? 4321);
 const CI = !!process.env.CI;
 
 /**
