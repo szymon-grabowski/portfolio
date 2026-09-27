@@ -1,5 +1,5 @@
 ---
-/** Title bar of a screen: "cd .." back link, screen number and title, status on the right. */
+/** Title bar of a screen: "cd .." back link, screen number and title, status and optional next screen on the right. */
 interface Props {
   num: string;
   title: string;
@@ -7,8 +7,10 @@ interface Props {
   back: string;
   /** Right-hand text before READY, e.g. the module count. */
   info?: string;
+  /** Link to a related screen after READY, styled like "cd ..". */
+  next?: { href: string; num: string; label: string };
 }
-const { num, title, titleId, back, info } = Astro.props;
+const { num, title, titleId, back, info, next } = Astro.props;
 ---
 <div class="cc-bar">
   <a class="cc-bar__back" href={back}>
@@ -22,4 +24,11 @@ const { num, title, titleId, back, info } = Astro.props;
   {info && <span class="cc-bar__count">{info}</span>}
   {info && <div class="sep"></div>}
   <span class="cc-bar__ready">READY <i aria-hidden="true"></i></span>
+  {next && (
+    <a class="cc-bar__back cc-bar__next" href={next.href} aria-label={`cd ${next.num}: ${next.label}`}>
+      cd {next.num}
+      <svg width="14" height="12" viewBox="0 0 14 12" fill="none" stroke="currentColor" stroke-width="1.8"
+           stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1 6h11M8 1.5L12.5 6 8 10.5" /></svg>
+    </a>
+  )}
 </div>

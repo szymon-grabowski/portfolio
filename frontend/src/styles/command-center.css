@@ -24,6 +24,8 @@
   border-radius: 4px;
 }
 .cc-bar__back:hover { border-color: var(--accent); color: var(--text); }
+/* Same button on the right edge (next screen): mirror the negative margin. */
+.cc-bar__next { margin-left: 0; margin-right: -8px; }
 .cc-bar__num { font-size: 18px; font-weight: 700; color: var(--accent-text); }
 .cc-bar__title { margin: 0; font-size: 18px; font-weight: 700; letter-spacing: 0.04em; white-space: nowrap; }
 .cc-bar__count { font-size: 12px; color: var(--accent-text); white-space: nowrap; }
