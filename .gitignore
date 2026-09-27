@@ -11,4 +11,6 @@ dist/
 # Systemowe
 .DS_Store
 *.log
-docs
+
+# Lokalne notatki (nie publikowane): audyty, plany migracji, podglądy
+helpers/
