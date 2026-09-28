@@ -20,7 +20,9 @@ ingress:
   enabled: true
   ingressClassName: traefik
   annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web   # TLS ends at host nginx until the switch
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure   # TLS and limits: deploy/bootstrap/traefik-config.yaml
+    traefik.ingress.kubernetes.io/router.tls: "true"
+    traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
   hosts:
     - grafana.szymongrabowski.dev
   path: /

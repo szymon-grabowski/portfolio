@@ -1,0 +1,41 @@
+# fail2ban jails for the k3s edge (Traefik). Installed by deploy/host/install-edge.sh.
+# Bans are for HTTP/HTTPS only: SSH keeps working, so a wrong ban can always be lifted with
+#   sudo fail2ban-client unban <IP>        (or: sudo fail2ban-client unban --all)
+#
+# Traefik gets the traffic through a hostPort: it is DNATed to the pod and never reaches the INPUT
+# chain, so iptables/UFW bans would not apply. The ban is an nftables chain on the prerouting hook,
+# priority -300: before conntrack and the DNAT, while the destination port is still 80/443.
+# reject is not allowed there, so banned packets are dropped.
+
+[DEFAULT]
+# Never ban this server itself (uptime probes leave through its public IP) nor pods (the cluster's
+# own requests reach Traefik from pod addresses).
+ignoreip = 127.0.0.1/8 ::1 213.199.44.81 10.42.0.0/16
+edge_ban = type=multiport, chain=f2b-edge, chain_hook=prerouting, chain_priority=-300, blocktype=drop
+
+# More than 20 requests refused with 429 within a minute: a script, not a visitor
+# (visitors stay inside the burst). 1 h, doubling for repeat offenders up to a week.
+[traefik-limit]
+enabled  = true
+backend  = auto
+filter   = traefik-429
+port     = http,https
+action   = nftables[%(edge_ban)s, name=%(__name__)s, port="%(port)s", protocol="tcp"]
+logpath  = /var/log/traefik/access.log
+findtime = 1m
+maxretry = 20
+bantime  = 1h
+bantime.increment = true
+bantime.factor    = 2
+bantime.maxtime   = 1w
+
+# 5 probes for secrets / admin tools within 10 minutes: 24 h.
+[web-probes]
+enabled  = true
+backend  = auto
+port     = http,https
+action   = nftables[%(edge_ban)s, name=%(__name__)s, port="%(port)s", protocol="tcp"]
+logpath  = /var/log/traefik/access.log
+findtime = 10m
+maxretry = 5
+bantime  = 24h

@@ -2,5 +2,13 @@ image:
   tag: "6dbd4ddd73b2000abc213cc21b4ed2a14e59947b"
 ingress:
   hosts:
-    - next.szymongrabowski.dev
-  entrypoint: web
+    - szymongrabowski.dev
+    - www.szymongrabowski.dev   # redirected to szymongrabowski.dev
+    - next.szymongrabowski.dev  # same build, noindex (nginx.conf)
+  entrypoint: websecure
+  tls:
+    enabled: true
+    certResolver: letsencrypt   # Traefik ACME, HTTP-01 (deploy/bootstrap/traefik-config.yaml)
+  redirectWww: true
+  rateLimit:
+    enabled: true

@@ -1,4 +1,7 @@
 # Copied to /var/lib/rancher/k3s/server/manifests/. Traefik chart v40: use service.spec.type, not service.type.
+# Traefik is the edge: it binds the host's ports 80/443 (hostPort) and terminates TLS (Let's Encrypt).
+# hostPort, not servicelb: klipper-lb masquerades the traffic, so rate limits and fail2ban would see its IP,
+# not the visitor's. hostPort keeps the client IP; the ports inside the pod stay unprivileged (8000/8443).
 apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
 metadata:
@@ -6,8 +9,12 @@ metadata:
   namespace: kube-system
 spec:
   valuesContent: |-
-    deployment:
-      replicas: 1
+    # Two pods cannot hold the same hostPort: stop the old one first (a restart is a few seconds of downtime).
+    updateStrategy:
+      type: RollingUpdate
+      rollingUpdate:
+        maxUnavailable: 1
+        maxSurge: 0
     resources:
       requests:
         cpu: 50m
@@ -16,18 +23,63 @@ spec:
         memory: 192Mi
     service:
       spec:
-        type: NodePort   # LoadBalancer at the production switch
+        type: NodePort   # 30080 on 127.0.0.1 only: kept for docs/rollback.md (host nginx in front again)
     ports:
       web:
+        hostPort: 80
         nodePort: 30080
-        # http:
-        #   redirections:
-        #     entryPoint:
-        #       to: websecure
-        #       scheme: https
-        #       permanent: true
+        http:
+          redirections:
+            entryPoint:
+              to: websecure
+              scheme: https
+              permanent: true
       websecure:
+        hostPort: 443
         nodePort: 30443
+        http:
+          tls:
+            certResolver: letsencrypt
+          # Every HTTPS router: per-IP limits (as on the old host nginx) and HSTS. The site adds its own,
+          # stricter rate limit in the portfolio chart.
+          middlewares:
+            - kube-system-limit-conn@kubernetescrd
+            - kube-system-limit-showcase@kubernetescrd
+            - kube-system-hsts@kubernetescrd
+    certificatesResolvers:
+      letsencrypt:
+        acme:
+          storage: /data/acme.json
+          httpChallenge:
+            entryPoint: web
+    persistence:   # acme.json survives restarts (local-path, included in the k3s backup)
+      enabled: true
+      size: 128Mi
+    podSecurityContext:
+      runAsGroup: 65532
+      runAsNonRoot: true
+      runAsUser: 65532
+      fsGroup: 65532
+      fsGroupChangePolicy: OnRootMismatch
+      seccompProfile:
+        type: RuntimeDefault
+    # Access log in a host file for fail2ban (deploy/host/install-edge.sh creates the directory, logrotate
+    # rotates it). Full client IPs stay on the host, like the nginx logs did; Loki does not get them.
+    logs:
+      access:
+        enabled: true
+        format: common
+        filePath: /var/log/traefik/access.log
+    deployment:
+      replicas: 1
+      additionalVolumes:
+        - name: access-log
+          hostPath:
+            path: /var/log/traefik
+            type: Directory
+    additionalVolumeMounts:
+      - name: access-log
+        mountPath: /var/log/traefik
     ingressRoute:
       dashboard:
         enabled: false
@@ -35,3 +87,38 @@ spec:
       prometheus:
         serviceMonitor:
           enabled: true
+    extraObjects:
+      # Measured 2026-09-27: a Grafana dashboard peaks at 30-36 requests/s, a visit of the site at 8/s.
+      - apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        metadata:
+          name: limit-showcase
+          namespace: kube-system
+        spec:
+          rateLimit:   # per client IP, answers 429
+            average: 20
+            period: 1s
+            burst: 100
+            sourceCriterion:
+              ipStrategy:
+                depth: 0
+      - apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        metadata:
+          name: limit-conn
+          namespace: kube-system
+        spec:
+          inFlightReq:   # at most 20 requests in progress per client IP (slow-connection floods)
+            amount: 20
+            sourceCriterion:   # the default would be the request host, not the client
+              ipStrategy:
+                depth: 0
+      - apiVersion: traefik.io/v1alpha1
+        kind: Middleware
+        metadata:
+          name: hsts
+          namespace: kube-system
+        spec:
+          headers:
+            stsSeconds: 31536000
+            stsIncludeSubdomains: true

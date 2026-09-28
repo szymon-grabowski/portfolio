@@ -30,62 +30,43 @@ Production is served by nginx straight from `dist/` (see below).
 | Build & static checks | `npm ci`, `npm audit` (production deps), `astro check` + build, HTML validation, internal links (lychee) |
 | E2E & accessibility | Playwright on the built `dist/`: Chromium, Firefox and a phone; boot, START, theme picker, cards and links, layout/monitor frame, axe WCAG 2.1 AA, no console errors |
 | Lighthouse | accessibility, best practices and SEO must score ≥ 0.9–0.95; performance < 0.9 is a warning |
-| Deploy to production | only on `main`, only after all of the above **and a manual approval** |
 | Helm charts & manifests | `helm lint`, render, `kubeconform`, memory limits and securityContext check |
 | Container image | build, push to GHCR (tag = commit SHA), Trivy scan (only on `main`) |
-| Release | after the approved deploy: sets `image.tag` in `deploy/charts/portfolio/values-prod.yaml`, Argo CD syncs |
+| Release to production | only on `main`, after all of the above **and a manual approval**: sets `image.tag` in `deploy/charts/portfolio/values-prod.yaml`, Argo CD syncs, then checks the live site |
 
-The deploy job copies the **same `dist/` that was tested** to the server with rsync (no
-build on the server), then checks that the live `index.html` matches it and that
-`/command-center/` and an asset return 200.
+The image is built from the same commit that was tested, scanned by Trivy and tagged with the
+commit SHA (never `latest`). After the approval the release job commits the tag, Argo CD rolls
+the pod out in k3s, and the job waits until `https://szymongrabowski.dev/version.txt` shows the
+new SHA, then checks `/` and `/command-center/`.
 
 ### Deploying
 
 1. Push or merge to `main`.
-2. When the checks pass, the run shows *Waiting for review* → **Review deployments** →
+2. When the checks and the image pass, the run shows *Waiting for review* → **Review deployments** →
    tick `production` → **Approve and deploy**.
 
 A run can also be started by hand: Actions → CI/CD → **Run workflow** (branch `main`).
 If several pushes wait for approval, only the newest one stays in the queue.
 
+Release commits (`deploy: portfolio …`) are made by CI, so run `git pull --rebase` before your own push.
+
 ### One-time setup
-
-On the server, a key used only for deployments:
-
-```bash
-ssh-keygen -t ed25519 -N '' -C github-deploy -f ~/.ssh/github_deploy
-cat ~/.ssh/github_deploy.pub >> ~/.ssh/authorized_keys
-cat ~/.ssh/github_deploy          # → secret SSH_PRIVATE_KEY, then: rm ~/.ssh/github_deploy
-ssh-keyscan -p 22 <server-ip>     # → secret SSH_KNOWN_HOSTS
-```
 
 On GitHub: Settings → Environments → **New environment** `production`:
 
 - **Required reviewers:** yourself (this is the manual approval step)
 - **Deployment branches and tags:** Selected → `main`
-- **Secrets** (everything about the server; GitHub shows them as `***` in logs):
-  - `SSH_PRIVATE_KEY`, the whole private key file
-  - `SSH_KNOWN_HOSTS`, the whole `ssh-keyscan` output
-  - `DEPLOY_HOST` (server IP or hostname)
-  - `DEPLOY_USER` (the SSH user)
-  - `DEPLOY_PATH` (the nginx `root`, e.g. `/home/<user>/portfolio/frontend/dist`)
-  - optionally `DEPLOY_PORT` (default 22)
 - **Variables:** only `SITE_URL` (`https://szymongrabowski.dev`), the public address.
   Variables are printed in plain text in the logs: never put anything else there.
-
-Before copying, the job refuses to run unless `$DEPLOY_PATH/index.html` already exists,
-so a wrong path cannot be wiped by `rsync --delete`.
+- **Secrets:** none. CI never logs in to the server: it only pushes to GHCR and to this repository.
 
 ### Security (public repository = public logs)
 
 Anyone can read the Actions logs and download the artifacts of this repository. So:
 
-- Server details live only in **environment secrets**, never in variables, workflow
-  files or commit messages. Each secret is passed only to the step that uses it.
-- The deploy job never prints values: no `set -x`, no verbose flags, ssh runs with
-  `LogLevel QUIET`, and ssh/rsync error output is discarded; error messages name the
-  failing setting, not its value.
-- Pull requests (also from forks) run only the checks: they get no secrets, and the
+- CI holds no credentials for the server. Its only write access is `GITHUB_TOKEN`: packages
+  (the image job) and contents (the release job, which runs only after the approval).
+- Pull requests (also from forks) run only the checks: they get no write token, and the
   `production` environment accepts only `main`.
 - Artifacts contain only the public build and test reports.
 - Recommended repo settings:
@@ -94,44 +75,35 @@ Anyone can read the Actions logs and download the artifacts of this repository. 
   - Settings → Environments → production: **Required reviewers** and branch `main`
   - a branch ruleset on `main` requiring the CI checks to pass
 
-If a secret ever shows up in a log: delete that workflow run (run page → ⋯ → Delete
-workflow run) and replace the secret (for SSH: a new key, old one removed from
-`~/.ssh/authorized_keys`).
+## Releasing by hand
 
-## Updating the server by hand
+If CI is unavailable. The site runs only in k3s, so a release is always an image tag in Git.
 
-The manual way, if CI is unavailable. The site is built directly on the server
-(`vmi3603348`), and nginx serves the build output in place:
-`/etc/nginx/sites-available/szymongrabowski.dev` has
-`root /home/szymon/portfolio/frontend/dist`. After a successful build the new version
-is live at once; no copying and no nginx reload are needed.
+- **An image that already exists** (an older release): set its SHA as `image.tag` in
+  `deploy/charts/portfolio/values-prod.yaml`, commit and push; Argo CD syncs within 3 minutes.
+  Same as `git revert` of a `deploy: portfolio …` commit.
+- **A new image:** build and push it from a machine with Docker, logged in to GHCR with a token
+  that has `write:packages`, then set the tag as above:
 
-### 1. Build (with checks)
+  ```bash
+  sha=$(git rev-parse HEAD)
+  docker build --build-arg GIT_SHA=$sha -t ghcr.io/szymon-grabowski/portfolio:$sha frontend
+  docker push ghcr.io/szymon-grabowski/portfolio:$sha
+  ```
 
-`package.json` is in `frontend/`, not in the repo root; running npm from
-`~/portfolio` fails with `ENOENT ... /home/szymon/portfolio/package.json`.
+To try a build locally before that: `cd frontend && npm ci && npm run build && npm run preview`.
 
-```bash
-cd ~/portfolio/frontend
-npm ci            # clean install from package-lock.json (skip if dependencies did not change)
-npm run build     # astro check (types + .astro templates), then the static build into dist/
-```
-
-The build must end with `0 errors` and `[build] Complete!`. `astro check` runs first,
-so on a check error the live `dist/` stays untouched and the old version keeps working.
-
-If `npm ci` fails with `ENOTEMPTY: directory not empty` (an interrupted or parallel
-install), run `rm -rf node_modules` and repeat `npm ci`.
-
-### 2. Check the live site
+### Check the live site
 
 ```bash
 D=https://szymongrabowski.dev
-curl -sI $D/ | grep -iE '^HTTP|cache-control'                                  # 200, no-cache
+curl -s $D/version.txt                                                         # the released SHA
+curl -sI $D/ | grep -iE '^HTTP|cache-control|strict-transport'                 # 200, no-cache, HSTS
 curl -sI $D/command-center/ | grep -iE '^HTTP'                                 # 200
 curl -sI "$D$(curl -s $D/ | grep -o '/_astro/[^")]*' | head -1)" \
   | grep -iE '^HTTP|cache-control'                                             # 200, immutable
-curl -sI http://szymongrabowski.dev/ | grep -iE '^HTTP|location'               # 301 to https
+curl -sI http://szymongrabowski.dev/ | grep -iE '^HTTP|location'               # 301/308 to https
+curl -sI https://www.szymongrabowski.dev/ | grep -iE '^HTTP|location'          # 301/308 to szymongrabowski.dev
 ```
 
 Then open https://szymongrabowski.dev in a private window (so no old cached files
@@ -147,11 +119,9 @@ hide a problem) and check:
 
 ### Changing the nginx config
 
-Content changes never need this. Only after editing the nginx site config:
-
-```bash
-sudo nginx -t && sudo systemctl reload nginx
-```
+`nginx/nginx.conf` and `nginx/security-headers.conf` are baked into the image, so a change goes
+through CI like any other. TLS, the HTTPS redirect, HSTS and rate limits are not in this nginx:
+they are on Traefik (`deploy/bootstrap/traefik-config.yaml`, `deploy/charts/portfolio`).
 
 ## Structure
 

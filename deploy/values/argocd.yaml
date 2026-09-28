@@ -7,7 +7,7 @@ applicationSet:
 
 configs:
   params:
-    server.insecure: true   # TLS ends in front of Argo CD (host nginx, later Traefik)
+    server.insecure: true   # TLS ends in front of Argo CD, at Traefik
     controller.status.processors: 5
     controller.operation.processors: 3
     reposerver.parallelism.limit: 1
@@ -17,8 +17,8 @@ configs:
     admin.enabled: true
     users.anonymous.enabled: true   # public, read-only showcase (role:public below)
     exec.enabled: false
-    # Traefik as NodePort never sets an Ingress address, so Argo CD would show "Progressing" forever.
-    # Remove after the production switch (Traefik as LoadBalancer).
+    # Traefik's Service is a NodePort (the edge is its hostPort), which never sets an Ingress address,
+    # so Argo CD would show "Progressing" forever.
     resource.customizations.health.networking.k8s.io_Ingress: |
       hs = {}
       hs.status = "Healthy"
@@ -51,7 +51,9 @@ server:
     ingressClassName: traefik
     hostname: argocd.szymongrabowski.dev
     annotations:
-      traefik.ingress.kubernetes.io/router.entrypoints: web   # TLS ends at host nginx until the switch
+      traefik.ingress.kubernetes.io/router.entrypoints: websecure   # TLS and limits: deploy/bootstrap/traefik-config.yaml
+      traefik.ingress.kubernetes.io/router.tls: "true"
+      traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 redis:
   resources:
     requests: { cpu: 10m, memory: 48Mi }    # 24h peak 31Mi

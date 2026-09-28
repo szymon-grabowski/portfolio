@@ -20,6 +20,8 @@ Potrzebne z menedżera haseł: `/root/k3s-backup.env` (restic). Hasło admina Gr
 5. `kubectl get pods -A`: Argo CD dociąga stan z Git.
 6. Secret Grafany (do czasu wdrożenia SOPS tworzony ręcznie):
    `kubectl -n monitoring create secret generic grafana-admin --from-literal=admin-user=admin --from-literal=admin-password='...'`
-7. DNS na nowy adres IP, jeśli się zmienił; sprawdź stronę, Grafanę i Argo CD.
+7. DNS na nowy adres IP, jeśli się zmienił (i nowy IP w `ignoreip` w `deploy/host/fail2ban/jail.d/traefik.local`).
+8. `sudo apt install -y fail2ban && sudo deploy/host/install-edge.sh` (fail2ban, logrotate; certyfikaty wracają z `acme.json` w backupie).
+   Sprawdź stronę, Grafanę i Argo CD.
 
 Przy pierwszym teście sprawdź ścieżki: `sudo find /restore -maxdepth 4`.

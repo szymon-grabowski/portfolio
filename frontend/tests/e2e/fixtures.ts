@@ -1,7 +1,7 @@
 import { test as base, expect, type Page } from '@playwright/test';
 import type { CheckName } from '../../src/data/status';
 
-/** Mocked /api/status: the page reads it instead of the live endpoint on next.szymongrabowski.dev. */
+/** Mocked /api/status: the page reads it instead of the live /api/status. */
 export const STATUS_MOCK_URL = '/__status-mock';
 
 export const ALL_CHECKS: CheckName[] = ['site', 'repository', 'cicd', 'argocd', 'kubernetes', 'grafana', 'prometheus', 'loki'];

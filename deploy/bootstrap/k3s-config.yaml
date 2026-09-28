@@ -1,6 +1,6 @@
 write-kubeconfig-mode: "0600"
 secrets-encryption: true
 disable:
-  - servicelb   # remove at the production switch
+  - servicelb   # Traefik binds 80/443 with hostPort (keeps the client IP); see traefik-config.yaml
 kube-proxy-arg:
   - nodeport-addresses=127.0.0.1/32   # NodePorts only on localhost (iptables would bypass UFW)

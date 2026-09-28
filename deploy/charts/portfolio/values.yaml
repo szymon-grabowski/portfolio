@@ -21,8 +21,13 @@ ingress:
     enabled: false
     secretName: ""   # existing TLS Secret
     certResolver: ""   # or Traefik ACME resolver
-  hsts: false
+  hsts: false         # production: HSTS is set for every host on Traefik's websecure entrypoint
   redirectWww: false
+  # Per-IP limit for this site only (Traefik answers 429); on top of the entrypoint-wide limits.
+  rateLimit:
+    enabled: false
+    average: 10         # a full visit peaks at 8 requests/s
+    burst: 40
 
 # /api/status for the Command Center LEDs: nginx proxies one fixed Prometheus query
 # (site_status, recording rules in values/kube-prometheus-stack.yaml). No visitor input reaches Prometheus.
@@ -30,5 +35,5 @@ statusApi:
   enabled: true
   prometheusUrl: http://kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
   resolver: 10.43.0.10          # cluster DNS (k3s default); nginx resolves the upstream at request time
-  # Production is still served outside the cluster, so it reads the status cross-origin.
+  # The page reads it same-origin; CORS only lets the other hosts of the site read it too.
   allowedOrigins: '^https://(www\.|next\.)?szymongrabowski\.dev$'

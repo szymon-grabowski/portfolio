@@ -1,9 +1,9 @@
-# Frontend pipeline: verify → test → (manual approval) → deploy → smoke test.
+# Pipeline: verify → test → image (+ Trivy) → (manual approval) → GitOps release → live check.
 #
-# Every push and pull request runs the checks. A push to main that passes them waits
-# for approval in the "production" environment (Settings → Environments → production
-# → Required reviewers); after "Approve and deploy" the tested build is copied to the
-# server and checked live. See frontend/README.md, "CI/CD".
+# Every push and pull request runs the checks. A push to main that passes them builds the
+# image and waits for approval in the "production" environment (Settings → Environments →
+# production → Required reviewers); after "Approve and deploy" the release job commits the
+# image tag, Argo CD syncs k3s and the job checks the live site. See frontend/README.md, "CI/CD".
 name: CI/CD
 
 on:
@@ -132,114 +132,6 @@ jobs:
           uploadArtifacts: true
           temporaryPublicStorage: false
 
-  deploy:
-    name: Deploy to production
-    needs: [verify, e2e, lighthouse]
-    if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-    runs-on: ubuntu-24.04
-    timeout-minutes: 10
-    # Required reviewers on this environment make the job wait for a manual "Approve and deploy".
-    environment:
-      name: production
-      url: ${{ vars.SITE_URL }}
-    # One deployment at a time; a newer approved build waits instead of cancelling a running one.
-    concurrency:
-      group: production
-      cancel-in-progress: false
-    # The repository is public, and so are these logs. Rules for this job:
-    # - everything about the server (host, user, port, path, keys) is a secret, never a
-    #   variable: GitHub masks secrets as *** but prints variables in plain text;
-    # - each secret is passed only to the step that needs it, never to the whole job;
-    # - no set -x, no verbose flags, and error messages never include a value;
-    # - ssh and rsync run quiet, so their own error lines cannot echo the host or path.
-    # SITE_URL is the only plain variable: it is the public address of the site.
-    env:
-      SITE_URL: ${{ vars.SITE_URL }}
-    steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          name: dist
-          path: dist
-
-      - name: Set up SSH
-        env:
-          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
-          DEPLOY_PORT: ${{ secrets.DEPLOY_PORT || '22' }}
-          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
-        run: |
-          for name in DEPLOY_HOST DEPLOY_USER SSH_PRIVATE_KEY SSH_KNOWN_HOSTS SITE_URL; do
-            [ -n "${!name}" ] || { echo "::error::$name is not set in the production environment"; exit 1; }
-          done
-          install -m 700 -d ~/.ssh
-          # Secrets pasted from a Windows clipboard carry \r line endings, which OpenSSH cannot read.
-          printf '%s\n' "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null 2>&1 || {
-            echo "::error::SSH_PRIVATE_KEY is not a valid private key: paste the whole file, from -----BEGIN to -----END, not the .pub"
-            exit 1
-          }
-          # Pinned host key: never trust whatever answers on first connect.
-          printf '%s\n' "$SSH_KNOWN_HOSTS" | tr -d '\r' > ~/.ssh/known_hosts
-          chmod 600 ~/.ssh/known_hosts
-          cat > ~/.ssh/config <<EOF
-          Host deploy
-            HostName $DEPLOY_HOST
-            Port $DEPLOY_PORT
-            User $DEPLOY_USER
-            IdentityFile ~/.ssh/deploy_key
-            IdentitiesOnly yes
-            StrictHostKeyChecking yes
-            BatchMode yes
-            LogLevel QUIET
-          EOF
-          chmod 600 ~/.ssh/config
-
-      - name: Check the target directory
-        # rsync --delete below empties whatever it points at: refuse anything that is not the live site.
-        env:
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: |
-          [ -n "$DEPLOY_PATH" ] || { echo "::error::DEPLOY_PATH is not set in the production environment"; exit 1; }
-          ssh deploy true 2>/dev/null || {
-            echo "::error::SSH login failed: check SSH_PRIVATE_KEY, SSH_KNOWN_HOSTS, DEPLOY_HOST/USER/PORT and authorized_keys on the server"
-            exit 1
-          }
-          ssh deploy "test -f '$DEPLOY_PATH/index.html'" 2>/dev/null || {
-            echo "::error::DEPLOY_PATH does not point at the live site (no index.html there)"
-            exit 1
-          }
-
-      - name: Upload the build
-        # --delay-updates puts every new file in place at the end, so visitors never see a half-copied site.
-        env:
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
-        run: |
-          rsync -rlz --quiet --checksum --delete-delay --delay-updates --chmod=D755,F644 \
-            dist/ "deploy:$DEPLOY_PATH/" 2>/dev/null || {
-            echo "::error::rsync to the server failed (exit code $?); see /var/log/auth.log on the server"
-            exit 1
-          }
-
-      - name: Smoke test the live site
-        run: |
-          expected=$(sha256sum dist/index.html | cut -d' ' -f1)
-          live=''
-          for attempt in 1 2 3 4 5 6 7 8 9 10; do
-            live=$(curl -fsS "$SITE_URL/" | sha256sum | cut -d' ' -f1) && [ "$live" = "$expected" ] && break
-            sleep 3
-          done
-          [ "$live" = "$expected" ] || { echo "::error::$SITE_URL/ does not serve the deployed index.html"; exit 1; }
-          curl -fsS -o /dev/null "$SITE_URL/command-center/"
-          asset=$(grep -o '/_astro/[^")]*' dist/index.html | head -1)
-          [ -z "$asset" ] || curl -fsS -o /dev/null "$SITE_URL$asset"
-          echo "Deployed ${GITHUB_SHA::7} to $SITE_URL" >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Remove the SSH key
-        if: always()
-        run: rm -rf ~/.ssh
-
   charts:
     name: Helm charts & manifests
     runs-on: ubuntu-24.04
@@ -320,13 +212,17 @@ jobs:
           exit-code: '1'
 
   release:
-    name: Release to Kubernetes (GitOps)
-    # After the production switch: drop "deploy" from needs, add "environment: production".
-    needs: [image, deploy]
+    name: Release to production (GitOps)
+    needs: [image]
     runs-on: ubuntu-24.04
     timeout-minutes: 15
+    # Required reviewers on this environment make the job wait for a manual "Approve and deploy".
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
     permissions:
       contents: write
+    # One release at a time; a newer approved build waits instead of cancelling a running one.
     concurrency:
       group: release
       cancel-in-progress: false
@@ -346,15 +242,18 @@ jobs:
           git pull --rebase origin main
           git push origin HEAD:main
 
-      - name: Wait for Argo CD and check the new version
-        if: vars.RELEASE_CHECK_URL != ''
+      - name: Wait for Argo CD and check the live site
         env:
-          URL: ${{ vars.RELEASE_CHECK_URL }}
+          URL: ${{ vars.SITE_URL }}
         run: |
+          [ -n "$URL" ] || { echo "::error::SITE_URL is not set in the production environment"; exit 1; }
+          live=''
           for attempt in $(seq 1 40); do
             live=$(curl -fsS "$URL/version.txt" || true)
-            [ "$live" = "$GITHUB_SHA" ] && { echo "Live: ${GITHUB_SHA::7}"; exit 0; }
+            [ "$live" = "$GITHUB_SHA" ] && break
             sleep 15
           done
-          echo "::error::$URL did not serve version ${GITHUB_SHA::7} within 10 minutes"
-          exit 1
+          [ "$live" = "$GITHUB_SHA" ] || { echo "::error::$URL did not serve version ${GITHUB_SHA::7} within 10 minutes"; exit 1; }
+          curl -fsS -o /dev/null "$URL/"
+          curl -fsS -o /dev/null "$URL/command-center/"
+          echo "Released ${GITHUB_SHA::7} to $URL" >> "$GITHUB_STEP_SUMMARY"

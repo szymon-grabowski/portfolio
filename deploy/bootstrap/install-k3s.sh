@@ -11,6 +11,7 @@ home="$(getent passwd "$user" | cut -d: -f6)"
 
 install -D -m 644 "$here/k3s-config.yaml" /etc/rancher/k3s/config.yaml   # no secrets; kubectl (k3s) reads it
 install -D -m 600 "$here/traefik-config.yaml" /var/lib/rancher/k3s/server/manifests/traefik-config.yaml
+install -d -m 750 -o 65532 -g 65532 /var/log/traefik   # Traefik's access log (hostPath), read by fail2ban
 
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION="$K3S_VERSION" sh -
 
