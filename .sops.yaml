@@ -1,4 +1,6 @@
+# Secrets in deploy/secrets/ are encrypted with this age public key (encrypting needs only this line).
+# The private key is in the password manager; decrypting: deploy/bootstrap/apply-secrets.sh.
 creation_rules:
   - path_regex: deploy/secrets/.*\.sops\.yaml$
     encrypted_regex: ^(data|stringData)$
-    age: AGE_PUBLIC_KEY   # replace with the output of age-keygen
+    age: age1tjlp4e6yjzc0tu8tun8nsjh7nrhc9h8qtswrzxh6pk67axphh3fqgre4ve

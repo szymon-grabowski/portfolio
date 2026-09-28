@@ -13,7 +13,8 @@ build (noindex).
 | `deploy/values/` | values for vendor charts (Argo CD, Prometheus, Loki, Alloy, Grafana, blackbox) |
 | `deploy/argocd/` | root Application and one Application per component |
 | `deploy/host/` | host side of the edge: fail2ban jails, logrotate, the switch script `install-edge.sh` |
-| `deploy/scripts/` | CI resource check, k3s backup |
+| `deploy/secrets/` | Secrets encrypted with SOPS/age (`deploy/bootstrap/apply-secrets.sh` decrypts them) |
+| `deploy/scripts/` | CI checks: resources, encrypted secrets |
 | `docs/` | infrastructure summary, restore and rollback runbooks |
 | `.github/workflows/ci-cd.yml` | tests → image → approval → GitOps release |
 
@@ -26,7 +27,8 @@ Details: [`docs/`](docs/).
 Decisions:
 - DNS: plain A records; certificates from Traefik's ACME (HTTP-01), so no DNS API is needed.
 - Edge: Traefik on hostPort 80/443, not servicelb, which would hide the client IP from rate limits and fail2ban.
-- Off-site backup: restic, target to be chosen (B2 or S3).
+- No cluster backup: everything but metric and log history is rebuilt from Git ([`docs/restore.md`](docs/restore.md)).
 - Admin UIs: Grafana and Argo CD are public and read-only (anonymous viewer, no Explore, no pod logs,
   no sync); administration needs a login. Prometheus and Loki only through Grafana panels or an SSH tunnel.
-- Secrets: never in Git. Today created by hand in the cluster (`grafana-admin`); SOPS is planned, not in use.
+- Secrets: in Git only encrypted (SOPS/age), checked by CI; the age private key is only in the password manager.
+- Alerts: Alertmanager → Discord; a Watchdog heartbeat to healthchecks.io covers the whole server going down.
