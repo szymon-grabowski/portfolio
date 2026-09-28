@@ -236,6 +236,8 @@ jobs:
           TAG: ${{ github.sha }}
         run: |
           yq -i '.image.tag = strenv(TAG)' deploy/charts/portfolio/values-prod.yaml
+          # A re-run of an already released commit: the tag is in Git, only the live check below is left.
+          git diff --quiet && { echo "image.tag is already ${TAG::7}"; exit 0; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -am "deploy: portfolio ${TAG::7} [skip ci]"
