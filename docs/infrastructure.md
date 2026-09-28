@@ -18,7 +18,7 @@ Publicznie tylko do odczytu: grafana.szymongrabowski.dev, argocd.szymongrabowski
 
 Traefik zajmuje porty 80/443 hosta przez `hostPort` (nie servicelb: klipper-lb maskaraduje ruch, więc limity
 i fail2ban widziałyby jego IP zamiast IP odwiedzającego). Certyfikaty: ACME Let's Encrypt (HTTP-01), `acme.json`
-na PVC (local-path, w backupie k3s). nginx na hoście jest wyłączony; jego konfiguracja i certyfikaty Certbota
+na PVC (local-path; po utracie serwera Traefik wystawi certyfikaty od nowa). nginx na hoście jest wyłączony; jego konfiguracja i certyfikaty Certbota
 zostały na dysku na wypadek `docs/rollback.md`. `next.szymongrabowski.dev` serwuje ten sam build z `noindex`.
 
 ## Wersje
@@ -56,7 +56,7 @@ Zapytania z publicznej Grafany są ograniczone (Prometheus: 30 s, 5 mln próbek;
 ## Alerty
 
 Reguły: `additionalPrometheusRulesMap` w `deploy/values/kube-prometheus-stack.yaml`. Alertmanager wysyła je na kanał
-Discorda (webhook z Secretu `alertmanager-discord`, tworzonego ręcznie do czasu SOPS), także po ustąpieniu problemu.
+Discorda (webhook z Secretu `alertmanager-discord`, zaszyfrowanego w `deploy/secrets/`), także po ustąpieniu problemu.
 
 | Alert | Kiedy | Poziom |
 |---|---|---|
@@ -121,12 +121,12 @@ ssh -L 19090:127.0.0.1:9090 vps "kubectl --kubeconfig ~/.kube/config -n monitori
 | 3 | GitHub | po pierwszym zielonym jobie `image`: pakiet `portfolio` → **Public** |
 | 4 | serwer | helm, kubeconform, yq (etap 3a) |
 | 5 | serwer | `sudo deploy/bootstrap/install-k3s.sh`; z laptopa sprawdź, że 30080 i 6443 są zamknięte |
-| 6 | serwer | `deploy/bootstrap/install-argocd.sh`; zmień hasło admina Argo CD; utwórz Secret `grafana-admin` (etap 9a), do tego czasu pod Grafany czeka |
+| 6 | serwer | `deploy/bootstrap/install-argocd.sh`, potem `SOPS_AGE_KEY_FILE=... deploy/bootstrap/apply-secrets.sh` (Grafana i Alertmanager czekają na sekrety) |
 | 7 | DNS | rekordy A: `@`, `www`, `next`, `grafana`, `argocd` → IP serwera |
 | 8 | GitHub | environment `production`: reviewer, branch `main`, zmienna `SITE_URL=https://szymongrabowski.dev` |
 | 9 | serwer | po Prometheusie: odkomentuj `metrics` w `traefik-config.yaml` i skopiuj do `/var/lib/rancher/k3s/server/manifests/` |
-| 10 | serwer | Secret `grafana-admin` (utworzony ręcznie); **SOPS jeszcze niewdrożony**: `.sops.yaml` ma szablon reguły, `deploy/secrets/` jest pusty |
-| 11 | serwer | restic + `/root/k3s-backup.env`, `/usr/local/sbin/k3s-backup`, cron; test restore na VM |
+| 10 | laptop | klucz age (`age-keygen`) w menedżerze haseł; klucz publiczny w `.sops.yaml` |
+| 11 | Discord, healthchecks.io | webhook kanału `#alerty`; check „server alerting” (5 min + 5 min) z mailem |
 | 12 | serwer | przełączenie (etap 13): po merge'u i syncu Argo CD `sudo deploy/host/install-edge.sh`; potem usuń sekrety SSH z GitHuba i klucz `github-deploy` z `~/.ssh/authorized_keys` |
 
 Wszystkie aplikacje w `deploy/argocd/applications/` są od razu wypełnione. Po instalacji Argo CD
@@ -139,7 +139,11 @@ monitoringu poza ten katalog i dodawaj je pojedynczo.
   po zmianie tych plików uruchom ponownie `install-edge.sh` (jest idempotentny).
 - Argo CD nie zarządza sam sobą: zmiana w `deploy/values/argocd.yaml` trafia do klastra dopiero po
   `deploy/bootstrap/install-argocd.sh` (bez sudo).
-- Sekrety nigdy jawnie w Git. Dziś tworzone ręcznie w klastrze (`grafana-admin`); docelowo zaszyfrowane SOPS w `deploy/secrets/`. Hasło restic jest w menedżerze haseł.
+- Sekrety tylko zaszyfrowane (SOPS/age) w `deploy/secrets/`; CI (`deploy/scripts/check-secrets.sh`) odrzuca jawne.
+  Klucz prywatny age jest wyłącznie w menedżerze haseł, nie na serwerze. Nowy sekret (wystarczy klucz publiczny):
+  `kubectl create secret generic NAZWA -n NS --from-file=klucz=/dev/stdin --dry-run=client -o yaml | sops -e --filename-override deploy/secrets/NAZWA.sops.yaml --input-type yaml --output-type yaml /dev/stdin > deploy/secrets/NAZWA.sops.yaml`,
+  potem commit i `apply-secrets.sh` z kluczem prywatnym (albo ten sam `kubectl create` bez `--dry-run`).
+- Backupu klastra nie ma, celowo: wszystko poza historią metryk i logów odtwarza się z Git (`docs/restore.md`).
 - Każdy kontener ma request i limit pamięci oraz hardened `securityContext` (sprawdza to CI).
 - Grafana i Argo CD publiczne tylko do odczytu; zapis i administracja tylko po zalogowaniu. Logi bez pełnych IP, retencja 7 dni.
 - Kopię `restore.md` i `rollback.md` trzymaj też poza serwerem (przy awarii repo może być niedostępne).

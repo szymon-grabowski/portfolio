@@ -1,27 +1,38 @@
-# Odtworzenie klastra po awarii
+# Odtworzenie od zera
 
-Potrzebne z menedżera haseł: `/root/k3s-backup.env` (restic). Hasło admina Grafany (Secret `grafana-admin`) — do czasu wdrożenia SOPS.
+Klaster nie ma backupu, bo nie potrzebuje: konfiguracja jest w Git, sekrety w `deploy/secrets/` (SOPS/age), a certyfikaty
+Traefik wystawi na nowo. Tracimy tylko historię metryk i logów (retencja i tak 7 dni).
 
-1. Nowy VPS z Ubuntu 24.04: SSH, UFW (etap 1), helm, kubeconform i yq (etap 3a).
-2. `git clone https://github.com/szymon-grabowski/portfolio.git ~/portfolio && cd ~/portfolio`
-3. Przywróć backup:
+Potrzebne z menedżera haseł: **klucz prywatny age** („portfolio age key”, linia `AGE-SECRET-KEY-...`).
+
+1. **DNS najpierw** (Let's Encrypt sprawdza domenę przez HTTP): rekordy A `@`, `www`, `next`, `grafana`, `argocd` →
+   IP nowego serwera. Nowy IP wpisz też w `ignoreip` w `deploy/host/fail2ban/jail.d/traefik.local` (commit).
+2. Nowy VPS z Ubuntu 24.04: SSH z kluczem, `01-hardening.conf`, UFW (`22`, `80`, `443`) — etap 1.
+   Narzędzia: `sudo apt install -y fail2ban age` oraz helm, yq, sops (etap 3a).
+3. Repo i k3s (instaluje też Traefika na 80/443):
    ```bash
-   sudo apt install -y restic sqlite3
-   sudo install -m 600 /dev/stdin /root/k3s-backup.env      # wklej zawartość, Ctrl+D
-   sudo bash -c 'source /root/k3s-backup.env && restic restore latest --tag k3s --target /restore'
-   B=/restore/var/lib/k3s-backup-staging
-   sudo install -D -m 600 $B/config.yaml /etc/rancher/k3s/config.yaml
-   sudo install -D -m 600 $B/state.db /var/lib/rancher/k3s/server/db/state.db
-   sudo install -D -m 600 $B/token /var/lib/rancher/k3s/server/token
-   sudo cp -a $B/cred $B/tls /var/lib/rancher/k3s/server/
-   sudo cp -a /restore/var/lib/rancher/k3s/storage /var/lib/rancher/k3s/
+   git clone https://github.com/szymon-grabowski/portfolio.git ~/portfolio && cd ~/portfolio
+   sudo deploy/bootstrap/install-k3s.sh
    ```
-4. `sudo deploy/bootstrap/install-k3s.sh`
-5. `kubectl get pods -A`: Argo CD dociąga stan z Git.
-6. Secret Grafany (do czasu wdrożenia SOPS tworzony ręcznie):
-   `kubectl -n monitoring create secret generic grafana-admin --from-literal=admin-user=admin --from-literal=admin-password='...'`
-7. DNS na nowy adres IP, jeśli się zmienił (i nowy IP w `ignoreip` w `deploy/host/fail2ban/jail.d/traefik.local`).
-8. `sudo apt install -y fail2ban && sudo deploy/host/install-edge.sh` (fail2ban, logrotate; certyfikaty wracają z `acme.json` w backupie).
-   Sprawdź stronę, Grafanę i Argo CD.
+4. Argo CD; po nim Argo CD sam wdraża resztę z Git (namespace'y, monitoring, stronę):
+   ```bash
+   deploy/bootstrap/install-argocd.sh
+   ```
+5. Sekrety. Grafana i Alertmanager czekają na nie (pody w `Init` / `ContainerCreating`), to normalne:
+   ```bash
+   install -m 600 /dev/null /tmp/age.key && nano /tmp/age.key     # wklej klucz prywatny, zapisz
+   SOPS_AGE_KEY_FILE=/tmp/age.key deploy/bootstrap/apply-secrets.sh
+   shred -u /tmp/age.key
+   kubectl -n argocd delete secret argocd-initial-admin-secret     # hasło admina jest już to z SOPS
+   ```
+6. Brzeg: fail2ban i logrotate (nginx na nowym serwerze nie ma, skrypt to pomija):
+   ```bash
+   sudo deploy/host/install-edge.sh
+   ```
+   Skrypt czeka na certyfikaty wszystkich hostów. Jeśli DNS jeszcze się nie rozszedł, poczekaj i uruchom go ponownie;
+   gdy Traefik nie ponawia ACME: `kubectl -n kube-system rollout restart deploy/traefik`.
+7. Sprawdź: `kubectl get pods -A`, https://argocd.szymongrabowski.dev (wszystkie aplikacje Synced/Healthy),
+   stronę, Grafanę; w healthchecks.io check wraca na „up”; testowy alert na Discorda (`docs/infrastructure.md`, „Alerty”).
 
-Przy pierwszym teście sprawdź ścieżki: `sudo find /restore -maxdepth 4`.
+Ścieżka nie była jeszcze przećwiczona na czystej maszynie: zrób to raz na tymczasowym VPS (bez zmiany DNS,
+certyfikaty wtedy nie powstaną, reszta tak).

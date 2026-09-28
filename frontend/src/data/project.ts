@@ -23,10 +23,10 @@ export const ARCHITECTURE: FlowLane[] = [
 ];
 
 export const PRINCIPLES = [
-  'Everything declared in Git: Helm charts, Argo CD apps, dashboards, alert rules',
+  'Everything declared in Git: Helm charts, Argo CD apps, dashboards, alert rules, encrypted secrets',
   'Non-root containers, read-only root filesystem, default-deny network policies',
   'Memory requests match measured peaks; limits on every container',
-  'Rollback = git revert of the release commit',
+  'Rollback = git revert of the release commit; a lost server is rebuilt from Git',
 ];
 
 export interface StackItem {
@@ -45,10 +45,11 @@ export const STACK: StackItem[] = [
   { name: 'Lighthouse CI', role: 'Blocks a release when accessibility, best practices or SEO scores drop.' },
   { name: 'Trivy', role: 'Scans the container image for known vulnerabilities before it ships.' },
   { name: 'Helm', role: 'Own charts for the site and the platform; values files for every vendor chart.' },
+  { name: 'SOPS + age', role: 'Secrets live in Git encrypted; CI rejects a plain one, the private key never sits on the server.' },
   { name: 'Argo CD', role: 'GitOps: keeps the cluster identical to Git (app of apps, self-heal, prune).' },
   { name: 'k3s', role: 'Single-node Kubernetes on the VPS: the site, Argo CD and monitoring.' },
   { name: 'Traefik', role: 'The edge of k3s on ports 80/443: Let\'s Encrypt certificates, HTTPS redirect, HSTS, per-IP rate limits, routing to the nginx pod.' },
-  { name: 'Prometheus', role: 'Metrics and uptime probes; recording rules behind the live LEDs, alert rules for downtime and certificates.' },
+  { name: 'Prometheus', role: 'Metrics and uptime probes; recording rules behind the live LEDs; alerts go through Alertmanager to Discord, with a heartbeat to healthchecks.io.' },
   { name: 'Loki', role: 'Stores pod logs, including the deploy history from Argo CD and the site access log.' },
   { name: 'Alloy', role: 'Collects pod logs, anonymises IP addresses and ships them to Loki.' },
   { name: 'Grafana', role: 'Public, read-only dashboards for metrics and logs.' },

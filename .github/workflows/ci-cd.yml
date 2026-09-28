@@ -167,6 +167,9 @@ jobs:
             rendered-*.yaml "${manifests[@]}"
           deploy/scripts/check-resources.sh rendered-*.yaml
 
+      - name: Secrets are encrypted
+        run: deploy/scripts/check-secrets.sh
+
   image:
     name: Container image
     needs: [verify, e2e, lighthouse, charts]
