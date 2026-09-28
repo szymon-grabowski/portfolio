@@ -1,9 +1,10 @@
-# Alerts go to a Discord channel. The webhook URL is a password, so it lives only in a Secret made by hand
-# (until SOPS): kubectl -n monitoring create secret generic alertmanager-discord --from-file=webhook-url=<file>
+# Alerts go to a Discord channel. Watchdog (always firing) pings healthchecks.io every 2 minutes; when the pings stop
+# (VPS, k3s or Alertmanager down), healthchecks.io alerts from outside. Both URLs are passwords, so they live only in
+# Secrets made by hand (until SOPS): alertmanager-discord (key webhook-url), alertmanager-healthchecks (key ping-url).
 alertmanager:
   enabled: true
   alertmanagerSpec:
-    secrets: [alertmanager-discord]   # mounted at /etc/alertmanager/secrets/alertmanager-discord/
+    secrets: [alertmanager-discord, alertmanager-healthchecks]   # mounted at /etc/alertmanager/secrets/<name>/
     retention: 120h
     resources:
       requests: { cpu: 5m, memory: 32Mi }
@@ -15,6 +16,12 @@ alertmanager:
       group_wait: 30s
       group_interval: 5m
       repeat_interval: 12h
+      routes:
+        - matchers: [alertname="Watchdog"]
+          receiver: healthchecks
+          group_wait: 0s
+          group_interval: 1m
+          repeat_interval: 2m   # healthchecks.io: period 5 min, grace 5 min
     # A critical alert silences the warning about the same thing (e.g. a certificate: 7 days mutes 21 days).
     inhibit_rules:
       - source_matchers: [severity="critical"]
@@ -24,7 +31,11 @@ alertmanager:
         target_matchers: [alertname="CertificateExpiresSoon"]
         equal: [target]
     receivers:
-      - name: "null"   # the chart routes its Watchdog alert here
+      - name: healthchecks
+        webhook_configs:
+          - url_file: /etc/alertmanager/secrets/alertmanager-healthchecks/ping-url
+            send_resolved: false
+            max_alerts: 1
       - name: discord
         discord_configs:
           - webhook_url_file: /etc/alertmanager/secrets/alertmanager-discord/webhook-url
@@ -77,6 +88,14 @@ additionalPrometheusRulesMap:
           - record: site_status
             expr: max(probe_success{target="loki"})
             labels: { check: loki }
+      - name: meta
+        rules:
+          # Always firing: the heartbeat for healthchecks.io (route above). It stops only when alerting itself is down.
+          - alert: Watchdog
+            expr: vector(1)
+            labels: { severity: none }
+            annotations:
+              summary: Alerting pipeline heartbeat
       - name: site-alerts
         rules:
           - alert: SiteDown

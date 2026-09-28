@@ -69,8 +69,9 @@ Discorda (webhook z Secretu `alertmanager-discord`, tworzonego ręcznie do czasu
 | `PodRestarting`, `PodOOMKilled` | > 3 restarty w 30 min; restart przez OOM | warning |
 | `DeploymentNotAvailable` | mniej gotowych replik niż zadano przez 15 min | warning |
 
-Alertmanager działa na tym samym VPS: gdy padnie cały serwer, nie wyśle nic. Na to potrzebny jest zewnętrzny
-nadzór (np. healthchecks.io z alertem `Watchdog`) — do zrobienia.
+Alertmanager działa na tym samym VPS, więc gdy padnie cały serwer, nie wyśle nic. Dlatego alert `Watchdog` (zawsze
+aktywny) co 2 min pinguje healthchecks.io (Secret `alertmanager-healthchecks`). Brak pingów przez 10 min → healthchecks.io
+wysyła mail i wiadomość na Discorda z zewnątrz.
 Test (wiadomość na Discordzie po ~30 s, „resolved” po 5 min):
 ```bash
 kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093 &
