@@ -43,6 +43,28 @@ test.describe('monitor frame', () => {
   }
 });
 
+// Pages built to fit the monitor screen without scrolling: adding text must not push the last
+// panel onto the screen's bezel (it happened once to EXPLORE on /project/, unnoticed by the other tests).
+test.describe('content fits the monitor screen', () => {
+  test.skip(({ isMobile }) => isMobile, 'the monitor frame is desktop only');
+  test.use({ viewport: { width: 1440, height: 900 } });
+  for (const path of ['/command-center/', '/project/']) {
+    test(path, async ({ page }) => {
+      await page.goto(path);
+      await expect(page.locator('body')).toHaveClass(/framed/);
+      const gap = await page.evaluate(() => {
+        const scale = document.querySelector('[data-monitor-rig]')!.getBoundingClientRect().width
+          / (document.querySelector('[data-monitor-rig]') as HTMLElement).offsetWidth;
+        const screen = document.querySelector('.screen')!.getBoundingClientRect();
+        const last = Math.max(...[...document.querySelectorAll('.cc > *, .cc .cc-group')].map((el) => el.getBoundingClientRect().bottom));
+        return (screen.bottom - last) / scale;
+      });
+      // The inner frame of the screen sits about 16px above its edge.
+      expect(gap).toBeGreaterThanOrEqual(20);
+    });
+  }
+});
+
 // Narrowest common phones: header (name, role, LED, theme) and boot log must fit.
 test.describe('narrow phone (360px)', () => {
   test.use({ viewport: { width: 360, height: 780 } });
