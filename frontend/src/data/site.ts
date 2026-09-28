@@ -9,7 +9,7 @@ export const SITE = {
   aboutTitle: 'About me — Szymon Grabowski',
   aboutDescription: 'Szymon Grabowski, DevOps engineer: CV, LinkedIn, GitHub, certifications and contact.',
   projectTitle: 'About this project — Szymon Grabowski',
-  projectDescription: 'How szymongrabowski.dev is built: GitOps on k3s, CI/CD with tests and scans, public observability.',
+  projectDescription: 'How szymongrabowski.dev is built: GitOps on k3s, CI/CD with tests and scans, encrypted secrets, public monitoring and alerting.',
   description: 'DevOps / Cloud Engineer: AWS, Terraform, Kubernetes, GitOps. A portfolio run like a production service.',
   owner: 'SZYMON GRABOWSKI',
   role: 'DEVOPS ENGINEER',

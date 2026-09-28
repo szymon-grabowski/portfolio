@@ -6,7 +6,7 @@ import type { IconName } from '../components/ModuleIcon.astro';
 
 export const PROJECT_GOAL = [
   'A personal site run like a production service. The page itself is static; everything around it is the work I do: infrastructure in Git, tested and scanned builds, GitOps deploys with approval and one-commit rollback, and monitoring that anyone can look at.',
-  'Everything runs on one VPS, in a single-node k3s cluster: the site, TLS, rate limits, GitOps and monitoring. Every component has a memory budget and a reason to be there.',
+  'Everything runs on one VPS, in a single-node k3s cluster: the site, its edge, GitOps, monitoring and alerting. Every component has a memory budget and a reason to be there.',
 ];
 
 export interface FlowLane {
@@ -16,16 +16,17 @@ export interface FlowLane {
 
 /** Read left to right; each lane is one path through the system. */
 export const ARCHITECTURE: FlowLane[] = [
-  { label: 'DELIVERY', steps: ['git push', 'GitHub Actions: build, e2e, Lighthouse', 'Trivy scan → image in GHCR', 'manual approval'] },
+  { label: 'DELIVERY', steps: ['git push', 'GitHub Actions: build, e2e, Lighthouse, Helm checks', 'Trivy scan → image in GHCR', 'manual approval'] },
   { label: 'GITOPS', steps: ['release commit (image tag)', 'Argo CD sync to k3s', 'rolling update, no downtime', 'live version check'] },
-  { label: 'RUNTIME', steps: ['visitor', 'Traefik: TLS (Let\'s Encrypt), rate limits', 'nginx pod: static files', 'fail2ban bans floods and scanners'] },
-  { label: 'OBSERVABILITY', steps: ['blackbox probes, node & pod metrics', 'Prometheus + alert rules', 'pod logs → Alloy → Loki', 'Grafana (public, read-only)'] },
+  { label: 'RUNTIME', steps: ['visitor', 'fail2ban: banned scanners dropped', 'Traefik: TLS, HSTS, rate limits', 'nginx pod: static files, /api/status'] },
+  { label: 'OBSERVABILITY', steps: ['blackbox probes, node & pod metrics', 'Prometheus', 'pod logs → Alloy → Loki', 'Grafana (public, read-only)'] },
+  { label: 'ALERTING', steps: ['alert rules', 'Alertmanager', 'Discord', 'server down: healthchecks.io'] },
 ];
 
 export const PRINCIPLES = [
-  'Everything declared in Git: Helm charts, Argo CD apps, dashboards, alert rules, encrypted secrets',
-  'Non-root containers, read-only root filesystem, default-deny network policies',
-  'Memory requests match measured peaks; limits on every container',
+  'Everything in Git: Helm charts, Argo CD apps, dashboards, alert rules, encrypted secrets',
+  'Non-root, read-only containers with measured memory limits; default-deny network policies',
+  'CI has no access to the server: it pushes an image and a commit, the cluster pulls',
   'Rollback = git revert of the release commit; a lost server is rebuilt from Git',
 ];
 
@@ -40,16 +41,18 @@ export const STACK: StackItem[] = [
   { name: 'TypeScript', role: 'Typed page scripts: boot sequence, themes, live status LEDs. astro check runs in CI.' },
   { name: 'nginx', role: 'Runs in a pod and serves the static files with cache and security headers; also proxies /api/status to Prometheus.' },
   { name: 'Docker', role: 'Packs nginx and the built site into one non-root image, published to GHCR.' },
-  { name: 'GitHub Actions', role: 'The pipeline: build, tests, Lighthouse, Helm checks, image, manual approval, release commit.' },
+  { name: 'GitHub Actions', role: 'The pipeline: build, tests, Lighthouse, Helm and secret checks, image, manual approval, release commit. It never logs in to the server.' },
   { name: 'Playwright', role: 'End-to-end tests in desktop Chrome, Firefox and a phone, with axe accessibility checks.' },
   { name: 'Lighthouse CI', role: 'Blocks a release when accessibility, best practices or SEO scores drop.' },
   { name: 'Trivy', role: 'Scans the container image for known vulnerabilities before it ships.' },
   { name: 'Helm', role: 'Own charts for the site and the platform; values files for every vendor chart.' },
   { name: 'SOPS + age', role: 'Secrets live in Git encrypted; CI rejects a plain one, the private key never sits on the server.' },
   { name: 'Argo CD', role: 'GitOps: keeps the cluster identical to Git (app of apps, self-heal, prune).' },
-  { name: 'k3s', role: 'Single-node Kubernetes on the VPS: the site, Argo CD and monitoring.' },
+  { name: 'k3s', role: 'Single-node Kubernetes on the VPS: the site and its edge, Argo CD, monitoring and alerting.' },
   { name: 'Traefik', role: 'The edge of k3s on ports 80/443: Let\'s Encrypt certificates, HTTPS redirect, HSTS, per-IP rate limits, routing to the nginx pod.' },
-  { name: 'Prometheus', role: 'Metrics and uptime probes; recording rules behind the live LEDs; alerts go through Alertmanager to Discord, with a heartbeat to healthchecks.io.' },
+  { name: 'fail2ban', role: 'Reads Traefik\'s access log on the host and bans scanners and floods in nftables, before the traffic reaches the cluster.' },
+  { name: 'Prometheus', role: 'Metrics and uptime probes; recording rules behind the live LEDs, and the alert rules.' },
+  { name: 'Alertmanager', role: 'Sends alerts to Discord. A Watchdog heartbeat to healthchecks.io raises the alarm from outside when the whole server is down.' },
   { name: 'Loki', role: 'Stores pod logs, including the deploy history from Argo CD and the site access log.' },
   { name: 'Alloy', role: 'Collects pod logs, anonymises IP addresses and ships them to Loki.' },
   { name: 'Grafana', role: 'Public, read-only dashboards for metrics and logs.' },
