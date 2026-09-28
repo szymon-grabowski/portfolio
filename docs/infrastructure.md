@@ -112,6 +112,8 @@ monitoringu poza ten katalog i dodawaj je pojedynczo.
 
 - Klaster zmieniamy tylko commitem. Wyjątki: bootstrap, `traefik-config.yaml` (Traefika instaluje k3s) i `deploy/host/`;
   po zmianie tych plików uruchom ponownie `install-edge.sh` (jest idempotentny).
+- Argo CD nie zarządza sam sobą: zmiana w `deploy/values/argocd.yaml` trafia do klastra dopiero po
+  `deploy/bootstrap/install-argocd.sh` (bez sudo).
 - Sekrety nigdy jawnie w Git. Dziś tworzone ręcznie w klastrze (`grafana-admin`); docelowo zaszyfrowane SOPS w `deploy/secrets/`. Hasło restic jest w menedżerze haseł.
 - Każdy kontener ma request i limit pamięci oraz hardened `securityContext` (sprawdza to CI).
 - Grafana i Argo CD publiczne tylko do odczytu; zapis i administracja tylko po zalogowaniu. Logi bez pełnych IP, retencja 7 dni.
