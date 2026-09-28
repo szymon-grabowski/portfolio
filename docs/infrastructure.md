@@ -11,7 +11,7 @@ Internet :80/:443 → Traefik (k3s, hostPort; TLS, limity) → portfolio (nginx,
 GitHub Actions → GHCR (obraz :SHA) │ Argo CD ← Git (deploy/**)
                                    │
 Prometheus + blackbox ─┐           │
-Loki ← Alloy (logi)  ──┴→ Grafana (alert rules w Prometheusie)
+Loki ← Alloy (logi)  ──┴→ Grafana;  reguły alertów → Alertmanager → Discord
 
 Publicznie tylko do odczytu: grafana.szymongrabowski.dev, argocd.szymongrabowski.dev
 ```
@@ -39,7 +39,7 @@ Wersje chartów są w `deploy/argocd/applications/*.yaml`, k3s w `install-k3s.sh
 ## Budżet RAM (limity)
 
 portfolio 32Mi · Traefik 192Mi (TLS i access log mogą podnieść szczyt — sprawdź po tygodniu) · Argo CD ~2 GiB (kontroler 1Gi, server 512Mi) · Prometheus 1Gi + exportery ~420Mi ·
-Loki 384Mi · Alloy 240Mi · Grafana 1Gi. Suma limitów ~5,3 GiB na 7,76 GiB (overcommit świadomy: szczyty nie nakładają się). Typowo cały stos zajmuje ~1,5–2 GB. Próg alarmowy: MemAvailable < 1 GB.
+Loki 384Mi · Alloy 240Mi · Grafana 1Gi · Alertmanager 64Mi. Suma limitów ~5,4 GiB na 7,76 GiB (overcommit świadomy: szczyty nie nakładają się). Typowo cały stos zajmuje ~1,5–2 GB. Próg alarmowy: MemAvailable < 1 GB (alert `NodeMemoryLow`).
 Requesty RAM = szczyt z 24 h (komentarze przy wartościach), żeby żaden pod nie zużywał więcej, niż deklaruje.
 Kubelet `/metrics` na k3s wystawia też metryki wbudowanego apiservera/etcd — zostawiamy tylko `kubelet_*`.
 Zapytania z publicznej Grafany są ograniczone (Prometheus: 30 s, 5 mln próbek; Loki: 30 s, 500 serii).
@@ -52,6 +52,30 @@ Zapytania z publicznej Grafany są ograniczone (Prometheus: 30 s, 5 mln próbek;
 - **Powrót do nginx na hoście:** `docs/rollback.md`.
 - **Odtworzenie po awarii:** `docs/restore.md`.
 - Commity `release` powstają w CI, więc przed własnym pushem zrób `git pull --rebase`.
+
+## Alerty
+
+Reguły: `additionalPrometheusRulesMap` w `deploy/values/kube-prometheus-stack.yaml`. Alertmanager wysyła je na kanał
+Discorda (webhook z Secretu `alertmanager-discord`, tworzonego ręcznie do czasu SOPS), także po ustąpieniu problemu.
+
+| Alert | Kiedy | Poziom |
+|---|---|---|
+| `SiteDown` | strona nie odpowiada 3 min | critical |
+| `ShowcaseDown` | `next.`, Grafana lub Argo CD nie odpowiada 10 min | warning |
+| `ArgoCDAppsNotHealthy` | aplikacja Argo CD nie jest Synced i Healthy 15 min | warning |
+| `CertificateExpiresSoon` / `VerySoon` | certyfikat wygasa za < 21 / < 7 dni | warning / critical |
+| `NodeMemoryLow` | MemAvailable < 1 GiB przez 10 min | warning |
+| `NodeDiskFilling` / `AlmostFull` | wolne < 15% / < 5% na `/` | warning / critical |
+| `PodRestarting`, `PodOOMKilled` | > 3 restarty w 30 min; restart przez OOM | warning |
+| `DeploymentNotAvailable` | mniej gotowych replik niż zadano przez 15 min | warning |
+
+Alertmanager działa na tym samym VPS: gdy padnie cały serwer, nie wyśle nic. Na to potrzebny jest zewnętrzny
+nadzór (np. healthchecks.io z alertem `Watchdog`) — do zrobienia.
+Test (wiadomość na Discordzie po ~30 s, „resolved” po 5 min):
+```bash
+kubectl -n monitoring port-forward svc/kube-prometheus-stack-alertmanager 9093 &
+curl -H 'Content-Type: application/json' -d '[{"labels":{"alertname":"Test","severity":"warning"},"annotations":{"summary":"test"}}]' http://127.0.0.1:9093/api/v2/alerts
+```
 
 ## Dostęp
 
