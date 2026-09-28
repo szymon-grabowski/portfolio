@@ -6,7 +6,7 @@ import type { IconName } from '../components/ModuleIcon.astro';
 
 export const PROJECT_GOAL = [
   'A personal site run like a production service. The page itself is static; everything around it is the work I do: infrastructure in Git, tested and scanned builds, GitOps deploys with approval and one-commit rollback, and monitoring that anyone can look at.',
-  'Everything runs on one VPS. Production is still static files behind the host nginx; the same site already runs on a single-node k3s cluster at next.szymongrabowski.dev, where every component has a memory budget and a reason to be there.',
+  'Everything runs on one VPS, in a single-node k3s cluster: the site, TLS, rate limits, GitOps and monitoring. Every component has a memory budget and a reason to be there.',
 ];
 
 export interface FlowLane {
@@ -16,9 +16,9 @@ export interface FlowLane {
 
 /** Read left to right; each lane is one path through the system. */
 export const ARCHITECTURE: FlowLane[] = [
-  { label: 'DELIVERY', steps: ['git push', 'GitHub Actions: build, e2e, Lighthouse', 'manual approval', 'rsync to the VPS (production)'] },
-  { label: 'GITOPS', steps: ['same build', 'Trivy scan → image in GHCR', 'release commit (image tag)', 'Argo CD sync to k3s (next.)'] },
-  { label: 'RUNTIME', steps: ['visitor', 'TLS at host nginx', 'production: static files', 'next.: Traefik → nginx pod'] },
+  { label: 'DELIVERY', steps: ['git push', 'GitHub Actions: build, e2e, Lighthouse', 'Trivy scan → image in GHCR', 'manual approval'] },
+  { label: 'GITOPS', steps: ['release commit (image tag)', 'Argo CD sync to k3s', 'rolling update, no downtime', 'live version check'] },
+  { label: 'RUNTIME', steps: ['visitor', 'Traefik: TLS (Let\'s Encrypt), rate limits', 'nginx pod: static files', 'fail2ban bans floods and scanners'] },
   { label: 'OBSERVABILITY', steps: ['blackbox probes, node & pod metrics', 'Prometheus + alert rules', 'pod logs → Alloy → Loki', 'Grafana (public, read-only)'] },
 ];
 
@@ -38,7 +38,7 @@ export interface StackItem {
 export const STACK: StackItem[] = [
   { name: 'Astro', role: 'Builds every page to static HTML at build time; nothing renders on a server at runtime.' },
   { name: 'TypeScript', role: 'Typed page scripts: boot sequence, themes, live status LEDs. astro check runs in CI.' },
-  { name: 'nginx', role: 'Serves the static files with cache and security headers; in k3s also proxies /api/status to Prometheus.' },
+  { name: 'nginx', role: 'Runs in a pod and serves the static files with cache and security headers; also proxies /api/status to Prometheus.' },
   { name: 'Docker', role: 'Packs nginx and the built site into one non-root image, published to GHCR.' },
   { name: 'GitHub Actions', role: 'The pipeline: build, tests, Lighthouse, Helm checks, image, manual approval, release commit.' },
   { name: 'Playwright', role: 'End-to-end tests in desktop Chrome, Firefox and a phone, with axe accessibility checks.' },
@@ -46,8 +46,8 @@ export const STACK: StackItem[] = [
   { name: 'Trivy', role: 'Scans the container image for known vulnerabilities before it ships.' },
   { name: 'Helm', role: 'Own charts for the site and the platform; values files for every vendor chart.' },
   { name: 'Argo CD', role: 'GitOps: keeps the cluster identical to Git (app of apps, self-heal, prune).' },
-  { name: 'k3s', role: 'Single-node Kubernetes on the VPS: next.szymongrabowski.dev, Argo CD and monitoring.' },
-  { name: 'Traefik', role: 'Ingress controller of k3s: routes next.szymongrabowski.dev to the nginx pod.' },
+  { name: 'k3s', role: 'Single-node Kubernetes on the VPS: the site, Argo CD and monitoring.' },
+  { name: 'Traefik', role: 'The edge of k3s on ports 80/443: Let\'s Encrypt certificates, HTTPS redirect, HSTS, per-IP rate limits, routing to the nginx pod.' },
   { name: 'Prometheus', role: 'Metrics and uptime probes; recording rules behind the live LEDs, alert rules for downtime and certificates.' },
   { name: 'Loki', role: 'Stores pod logs, including the deploy history from Argo CD and the site access log.' },
   { name: 'Alloy', role: 'Collects pod logs, anonymises IP addresses and ships them to Loki.' },

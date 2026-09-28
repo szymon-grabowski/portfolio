@@ -1,0 +1,11 @@
+# Traefik's access log (hostPath of the Traefik pod). copytruncate: Traefik keeps the file open.
+/var/log/traefik/access.log {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    su 65532 65532
+}

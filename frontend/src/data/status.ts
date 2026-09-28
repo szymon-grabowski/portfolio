@@ -13,8 +13,8 @@ export const STATUS_EVENT = 'site-status';
 /** Working checks out of all CHECKS; null = no data (fetch failed or not on the real site). */
 export type StatusSummary = { ok: number; total: number } | null;
 
-/** Production is still served outside the cluster, so every host reads the endpoint on next. */
-export const STATUS_URL = 'https://next.szymongrabowski.dev/api/status';
+/** Same origin: every host of the site is served by the nginx pod that answers /api/status. */
+export const STATUS_URL = '/api/status';
 
 /** Only the real site asks for status; local previews and Lighthouse runs stay neutral. */
 export const STATUS_HOSTS = /(^|\.)szymongrabowski\.dev$/;

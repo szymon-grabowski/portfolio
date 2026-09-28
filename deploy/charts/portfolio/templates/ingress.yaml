@@ -1,6 +1,7 @@
 {{- $mw := list -}}
 {{- if .Values.ingress.redirectWww }}{{ $mw = append $mw (printf "%s-redirect-www@kubernetescrd" .Release.Namespace) }}{{ end -}}
 {{- if .Values.ingress.hsts }}{{ $mw = append $mw (printf "%s-hsts@kubernetescrd" .Release.Namespace) }}{{ end -}}
+{{- if .Values.ingress.rateLimit.enabled }}{{ $mw = append $mw (printf "%s-rate-limit@kubernetescrd" .Release.Namespace) }}{{ end -}}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
