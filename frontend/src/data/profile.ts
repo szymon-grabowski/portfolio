@@ -38,13 +38,13 @@ export const CV_FILENAME = 'Szymon-Grabowski-CV.pdf';
 
 export const PROFILE = {
   name: 'Szymon Grabowski',
-  role: 'DevOps / Cloud Engineer',
-  location: 'Racibórz, Poland · remote or hybrid in Silesia',
+  role: 'DevOps Engineer',
+  location: 'Racibórz, Poland · remote',
   bio: [
-    'I came to DevOps from the operations side. Two years of keeping real users, devices and systems running showed me what breaks at 8 a.m. on a Monday. Now I build platforms that prevent it: infrastructure declared in code, every change shipped through a pipeline, and every service monitored and secured from day one.',
-    'At CloudForge I design and build AWS environments with Terraform and Terragrunt, GitLab CI/CD pipelines without static cloud credentials, and Kubernetes delivery with Helm and Argo CD, under the review of senior DevOps engineers. This site is a platform I run end to end myself; 2.2 shows how.',
+    'I work as a DevOps Engineer. I design AWS infrastructure as code, automate server configuration and application deployments, and set up monitoring and runbooks.',
+    'Before that I spent a year keeping IT systems running in Żabka Polska’s logistics operations: diagnosing incidents, finding root causes and documenting fixes for recurring failures. This site is my own application on a VPS with k3s, run end to end by me; 2.2 shows how.',
   ],
-  focus: ['AWS', 'Terraform / Terragrunt', 'Kubernetes · Helm · Argo CD', 'GitLab CI/CD', 'Prometheus · Grafana', 'Linux'],
+  focus: ['AWS', 'Terraform / Terragrunt', 'Kubernetes · Helm · Argo CD', 'GitHub Actions · GitLab CI', 'Prometheus · Grafana · Loki', 'Ansible · Linux'],
   email: 'grabowski.szymon@proton.me',
 };
 
@@ -64,54 +64,32 @@ export const EXPERIENCE: Job[] = [
     company: 'CloudForge',
     role: 'DevOps Engineer',
     period: '03.2026 – present',
-    context: 'Engineering for client assignments',
+    context: 'Remote',
     points: [
-      'Build infrastructure, automation and CI/CD components from scratch, reviewed by senior DevOps engineers.',
-      'Take part in technical preparation and interviews for client assignments.',
-      'Own the documentation: architecture, technical decisions, deployment runbooks and recovery scenarios.',
+      'Design AWS infrastructure as code with Terraform and Terragrunt, with separate environments and remote state.',
+      'Configure VPC networking, IAM policies and access to AWS services.',
+      'Write Ansible roles for Linux and administration scripts in Python and Bash.',
+      'Build GitHub Actions and GitLab CI pipelines that build Docker images, push them to ECR and deploy to EKS with Helm and Argo CD.',
+      'Set up monitoring and alerting with Prometheus, Grafana and Alertmanager, and write the runbooks behind it.',
     ],
   },
   {
     company: 'CloudForge',
-    role: 'DevOps Development Program',
+    role: 'DevOps Mentoring Program',
     period: '09.2025 – 03.2026',
-    context: 'Mentored engineering projects on AWS',
     points: [
-      'Built isolated AWS environments with Terraform and Terragrunt: VPC networking, IAM, ECS/EKS and observability.',
-      'Created GitLab CI/CD pipelines with IaC validation, security scans and image builds, deploying through OIDC instead of static keys.',
-      'Shipped to Kubernetes with Helm and Argo CD and proved health checks, rollbacks, scaling and network restrictions between services.',
-      'Set up Prometheus, Grafana and Alertmanager with automated checks that metrics, alerts and availability actually work.',
-      'Automated server configuration with Ansible, idempotent and repeatable.',
+      'Developed AWS, CI/CD, Kubernetes and monitoring skills under the mentorship of senior engineers.',
     ],
   },
   {
     company: 'Żabka Polska',
     role: 'IT Operations Specialist',
     period: '09.2024 – 09.2025',
-    context: 'Tychy · IT operations for one of Poland’s largest retail networks',
+    context: 'IT operations in a logistics environment',
     points: [
-      'Resolved Jira requests and led second-line escalations with external vendors, in Polish and English.',
-      'Managed users, groups and permissions in Active Directory, Entra ID, Exchange and logistics systems.',
-      'Automated application and policy rollouts with Barramundi; analysed Palo Alto firewall logs.',
-      'Ran IT onboarding and wrote the Confluence documentation behind it.',
-    ],
-  },
-  {
-    company: 'Extral',
-    role: 'IT Support Contractor',
-    period: '06.2024 – 09.2024',
-    context: 'Żory · production environment support',
-    points: [
-      'Handled incidents on-site and remotely; rolled out security updates and disk encryption.',
-    ],
-  },
-  {
-    company: 'PC net (Komputronik)',
-    role: 'IT Service Technician',
-    period: '01.2022 – 05.2022',
-    context: 'Trzcianka',
-    points: [
-      'Diagnosed and repaired hardware, configured LAN/WAN and client systems, ran data recovery and backups.',
+      'Maintained IT systems in a logistics environment and supported users.',
+      'Diagnosed incidents, found the root causes of failures and escalated complex issues.',
+      'Documented fixes for recurring failures and the procedures for handling them.',
     ],
   },
 ];
@@ -122,21 +100,22 @@ export interface SkillGroup {
 }
 
 export const SKILLS: SkillGroup[] = [
-  { label: 'Cloud & IaC', items: ['AWS: VPC, EC2, ECS/Fargate, EKS, IAM, S3, DynamoDB, ECR, CloudWatch, KMS, SQS', 'Terraform', 'Terragrunt', 'Ansible'] },
-  { label: 'Containers', items: ['Docker', 'Kubernetes', 'Helm', 'Argo CD', 'GitOps', 'nginx'] },
-  { label: 'CI/CD', items: ['GitLab CI/CD', 'OIDC', 'self-hosted GitLab Runner', 'Jenkins', 'Kaniko', 'Git'] },
-  { label: 'Observability', items: ['Prometheus', 'Grafana', 'Alertmanager', 'CloudWatch', 'synthetic checks', 'log analysis'] },
-  { label: 'Security', items: ['IAM & RBAC', 'least privilege', 'Trivy', 'tfsec', 'tflint'] },
-  { label: 'Systems & network', items: ['Linux', 'Bash', 'Windows Server', 'AD / Entra ID', 'TCP/IP, DNS, DHCP, routing'] },
+  { label: 'AWS', items: ['EC2', 'S3', 'RDS', 'EKS', 'ECR', 'VPC', 'IAM', 'Route 53', 'CloudWatch'] },
+  { label: 'Infrastructure as Code', items: ['Terraform', 'Terragrunt', 'separate environments', 'remote state'] },
+  { label: 'Automation', items: ['Ansible', 'Python', 'Bash'] },
+  { label: 'CI/CD & Git', items: ['GitHub Actions', 'GitLab CI', 'Git'] },
+  { label: 'Containers', items: ['Docker', 'Kubernetes (EKS, k3s)', 'Helm', 'Argo CD'] },
+  { label: 'Monitoring & logs', items: ['Prometheus', 'Grafana', 'Grafana Cloud', 'Alertmanager', 'Loki'] },
+  { label: 'Linux & network', items: ['Ubuntu / Debian', 'VPC', 'DNS', 'IAM policies'] },
 ];
 
 export const EDUCATION = {
-  school: 'WSB Merito University, Chorzów',
-  degree: 'BEng in Computer Science, Cloud Developer track',
+  school: 'WSB Merito University',
+  degree: 'BEng in Computer Science, Cloud Developer specialisation (in progress)',
   period: '10.2025 – 02.2029',
 };
 
-export const LANGUAGES = ['Polish: native', 'English: technical documentation and daily work in IT'];
+export const LANGUAGES = ['Polish: native', 'English: B2'];
 
 export const PROFILE_LINKS: ProfileLink[] = [
   { title: 'LinkedIn', description: 'Experience and network', icon: 'linkedin', href: 'https://www.linkedin.com/in/szymon-grabowskii/', external: true },
@@ -144,8 +123,6 @@ export const PROFILE_LINKS: ProfileLink[] = [
   { title: 'Email', description: PROFILE.email, icon: 'mail', href: `mailto:${PROFILE.email}`, copy: PROFILE.email },
 ];
 
-export const CERTIFICATIONS: Certification[] = [
-  { name: 'AWS Certified Solutions Architect – Associate', issuer: 'Amazon Web Services', date: 'in progress' },
-];
+export const CERTIFICATIONS: Certification[] = [];
 
 export const PROJECTS: Project[] = [];

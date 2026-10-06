@@ -7,7 +7,7 @@ export const BOOT_STEPS: { text: string; modules?: true }[] = [
   { text: 'Stack: AWS · Terraform · Kubernetes' },
   // \u00a0 keeps product names on one line when the log wraps on narrow phones.
   { text: 'CI/CD: GitLab · GitHub\u00a0Actions · Argo\u00a0CD' },
-  { text: 'Location: Racibórz · remote / hybrid' },
+  { text: 'Location: Racibórz · remote' },
   { text: 'System ready', modules: true },
 ];
 
