@@ -10,7 +10,7 @@ import { SITE } from '../data/site';
 const LINES = [
   ['Stack: AWS · Terraform · Kubernetes', '[OK]'],
   ['CI/CD: GitLab · GitHub Actions · Argo CD', '[OK]'],
-  ['Location: Racibórz · remote / hybrid', '[OK]'],
+  ['Location: Racibórz · remote', '[OK]'],
   ['System ready.', '[8/8]'],
 ];
 ---
@@ -48,7 +48,7 @@ const LINES = [
     <div class="card">
       <div class="bar"><span>&gt; INITIALIZING DEVOPS ENVIRONMENT</span><div class="rule"></div><span class="led"></span><span>ALL SYSTEMS OPERATIONAL</span></div>
       <h1>{SITE.owner}</h1>
-      <h2>DEVOPS / CLOUD ENGINEER</h2>
+      <h2>DEVOPS ENGINEER</h2>
       <div class="log">
         {LINES.map(([text, status]) => <div><span>&gt; {text}{status === '[OK]' ? '...' : ''}</span><span class="ok">{status}</span></div>)}
       </div>
