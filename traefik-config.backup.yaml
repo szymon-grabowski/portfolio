@@ -1,13 +1,22 @@
-# Copied to /var/lib/rancher/k3s/server/manifests/. Traefik chart v40: use service.spec.type, not service.type.
-# Traefik is the edge: it binds the host's ports 80/443 (hostPort) and terminates TLS (Let's Encrypt).
-# hostPort, not servicelb: klipper-lb masquerades the traffic, so rate limits and fail2ban would see its IP,
-# not the visitor's. hostPort keeps the client IP; the ports inside the pod stay unprivileged (8000/8443).
 apiVersion: helm.cattle.io/v1
 kind: HelmChartConfig
 metadata:
+  annotations:
+    objectset.rio.cattle.io/applied: H4sIAAAAAAAA/4SRP2sjMRDFv4qYa9e+s+/8T3BFcBNIkyKkn5VGlrJazaIZ2wTj7x7WIRAXjku9x/vpJ3QCHNIrVUlcwEKk3E8dqmaaJv59mEEDXSoeLDxS7rcRq265hLSDBnpS9KgI9gRYCitq4iLjkds3ciqk05r4GzCNJGhu9nwsVCe7QwcWur9ypdKYp1T8/wfvudxFFOwJLGhFCqmbuC/n+ysZ0I3Tbt/SRN5FqYdzAxlbyj++LaJEsIDterVw5MMMV+s5/XG43CzdBjftYhba+cpjwED//Ai9toTP4IaADOTG6w+Y9yRbLkpFwcIv83JkM7AX4y6/YCJnbzSSEezJRBZ95qrWiPJwyceeC5mQqiiczx8BAAD//0QNzXgFAgAA
+    objectset.rio.cattle.io/id: ""
+    objectset.rio.cattle.io/owner-gvk: k3s.cattle.io/v1, Kind=Addon
+    objectset.rio.cattle.io/owner-name: traefik-config
+    objectset.rio.cattle.io/owner-namespace: kube-system
+  creationTimestamp: "2026-09-25T19:09:00Z"
+  generation: 4
+  labels:
+    objectset.rio.cattle.io/hash: ab875cedf1a782e0ca696c9a9b51fb27dafafe4d
   name: traefik
   namespace: kube-system
+  resourceVersion: "108924"
+  uid: 11350603-5841-41ed-ae13-08ecb241968b
 spec:
+  failurePolicy: reinstall
   valuesContent: |-
     # Two pods cannot hold the same hostPort: stop the old one first (a restart is a few seconds of downtime).
     updateStrategy:
@@ -50,10 +59,8 @@ spec:
       letsencrypt:
         acme:
           storage: /data/acme.json
-          dnsChallenge:
-            provider: cloudflare
-            resolvers:
-              - "1.1.1.1:53"
+          httpChallenge:
+            entryPoint: web
     persistence:   # acme.json survives restarts (local-path, included in the k3s backup)
       enabled: true
       size: 128Mi
@@ -124,9 +131,3 @@ spec:
           headers:
             stsSeconds: 31536000
             stsIncludeSubdomains: true
-    env:
-      - name: CF_DNS_API_TOKEN
-        valueFrom:
-          secretKeyRef:
-            name: cloudflare-dns-token
-            key: token
