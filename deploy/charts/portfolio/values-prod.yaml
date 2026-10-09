@@ -1,5 +1,5 @@
 image:
-  tag: "05f4fe25fce57f7a4a45ae9f21ddb3a4e4c00f46"
+  tag: "ab31e7d897facb37b6e6c0b813c57f7ab8f8da58"
 ingress:
   hosts:
     - szymongrabowski.dev
