@@ -8,8 +8,10 @@ RUN npm run build && echo "$GIT_SHA" > dist/version.txt
 
 FROM docker.io/nginxinc/nginx-unprivileged:1-alpine
 # Security fixes released after the base image was built.
+# APK_REFRESH changes daily in CI, so this layer is not reused from the build cache indefinitely.
+ARG APK_REFRESH=manual
 USER root
-RUN apk upgrade --no-cache
+RUN echo "apk refresh: $APK_REFRESH" && apk upgrade --no-cache
 USER 101
 LABEL org.opencontainers.image.source="https://github.com/szymon-grabowski/portfolio"
 COPY nginx/nginx.conf /etc/nginx/nginx.conf
