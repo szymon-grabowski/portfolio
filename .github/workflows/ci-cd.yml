@@ -194,13 +194,20 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Date for apk refresh
+        id: date
+        run: echo "today=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+
       - name: Build and push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
           context: frontend
           push: true
+          pull: true
           tags: ${{ env.IMAGE }}
-          build-args: GIT_SHA=${{ github.sha }}
+          build-args: |
+            GIT_SHA=${{ github.sha }}
+            APK_REFRESH=${{ steps.date.outputs.today }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
